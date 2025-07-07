@@ -1,0 +1,21 @@
+import ActionPreviewSection from "@/components/layouts/ActionPreviewSection";
+import ComplianceSection from "@/components/layouts/ComplianceSection";
+import Footer from "@/components/layouts/Footer";
+import Herosection from "@/components/layouts/Herosection";
+import InstructionSection from "@/components/layouts/InstructionSection";
+import Navbar from "@/components/layouts/Navbar";
+import TaxComplianceSection from "@/components/layouts/TaxComplianceSection";
+
+export default function Home() {
+  return (
+    <div className="relative overflow-hidden">
+      <Navbar />
+      <Herosection />
+      <TaxComplianceSection />
+      <InstructionSection />
+      <ActionPreviewSection />
+      <ComplianceSection />
+      <Footer />
+   </div>
+  );
+}
