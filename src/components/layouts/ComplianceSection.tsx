@@ -1,31 +1,11 @@
 "use client"
-import { motion, Variants } from "framer-motion"
+import { fadeInUp, staggerContainer } from "@/lib/animation"
+import { motion } from "framer-motion"
 import { CheckCircle } from "lucide-react"
 import Image from "next/image"
 
 const ComplianceSection = () => {
-    const fadeInUp: Variants = {
-        hidden: { opacity: 0, y: 40 },
-        show: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.6,
-                ease: "easeOut",
-            },
-        },
-    }
-
-    const staggerContainer = {
-        hidden: { opacity: 0 },
-        show: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1,
-            },
-        },
-    }
-
+    
     const complianceFeatures = [
         {
             icon: '/icons/shield.svg',

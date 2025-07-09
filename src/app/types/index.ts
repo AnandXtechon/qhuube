@@ -63,3 +63,22 @@ export interface OverviewStepProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     correctedData: any[]
 }
+
+
+export interface PricingCardProps {
+    plan: {
+        id: string
+        name: string
+        price: string
+        amount: number
+        period: string
+        originalPrice?: string
+        description: string
+        features: string[]
+        popular: boolean
+        buttonText: string
+        color: string
+        bgColor: string
+    }
+    index: number
+}

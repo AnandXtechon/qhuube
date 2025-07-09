@@ -90,7 +90,7 @@ const UploadStep = ({
             </motion.div>
 
             {/* Upload Area */}
-            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8 max-w-4xl ml-32">
                 <div
                     className={`relative border-2 border-dashed rounded-xl p-12 text-center ${dragActive ? "border-sky-500 bg-sky-50" : "border-gray-300 hover:border-sky-400 hover:bg-gray-50"}`}
                     onDragEnter={handleDrag}
@@ -131,7 +131,7 @@ const UploadStep = ({
 
             {/* Uploaded Files */}
             {uploadedFiles.length > 0 && (
-                <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+                <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8  max-w-4xl ml-32">
                     <h3 className="text-xl font-semibold text-gray-900 mb-6">Uploaded Files</h3>
                     <div className="space-y-4">
                         {uploadedFiles.map((file, index) => {
@@ -185,7 +185,7 @@ const UploadStep = ({
             )}
 
             {/* Navigation */}
-            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="flex justify-between items-center">
+            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="flex justify-between items-center  max-w-4xl ml-32">
                 <Button variant="outline" disabled className="text-gray-400 bg-transparent">Previous</Button>
                 <Button className="bg-sky-600 hover:bg-sky-700 text-white" disabled={!allFilesUploaded} onClick={onNext}>
                     Continue

@@ -1,5 +1,7 @@
 import ActionPreviewSection from "@/components/layouts/ActionPreviewSection";
-import ComplianceSection from "@/components/layouts/ComplianceSection";
+// import ComplianceSection from "@/components/layouts/ComplianceSection";
+import ConversionSection from "@/components/layouts/ConversionSection";
+import FinalCTASection from "@/components/layouts/FinalCTASection";
 import Footer from "@/components/layouts/Footer";
 import Herosection from "@/components/layouts/Herosection";
 import InstructionSection from "@/components/layouts/InstructionSection";
@@ -14,7 +16,9 @@ export default function Home() {
       <TaxComplianceSection />
       <InstructionSection />
       <ActionPreviewSection />
-      <ComplianceSection />
+      {/* <ComplianceSection /> */}
+      <ConversionSection />
+      <FinalCTASection />
       <Footer />
    </div>
   );

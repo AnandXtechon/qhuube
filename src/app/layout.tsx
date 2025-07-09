@@ -2,11 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Plus_Jakarta_Sans } from "next/font/google"
 import "./globals.css"
-<<<<<<< HEAD
-=======
 import { Toaster } from "@/components/ui/sonner"
-
->>>>>>> 5a48112 (TAX)
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -62,15 +58,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={plusJakartaSans.variable}>
-<<<<<<< HEAD
-      
-      <body className="font-sans antialiased bg-background text-foreground">
-        <main>{children}</main>
-=======
       <body className="font-sans antialiased bg-background text-foreground">
         <main>{children}</main>
         <Toaster />
->>>>>>> 5a48112 (TAX)
       </body>
     </html>
   )

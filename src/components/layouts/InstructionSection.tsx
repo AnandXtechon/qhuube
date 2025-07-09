@@ -1,45 +1,20 @@
 "use client"
-<<<<<<< HEAD
-import { motion, type Variants } from "framer-motion"
-import { CheckCircle } from "lucide-react"
-
-const fadeInUp: Variants = {
-    hidden: { opacity: 0, y: 40 },
-    show: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.6,
-            ease: "easeOut",
-        },
-    },
-}
-=======
 import { fadeInDown, slideInTop } from "@/lib/animation"
 import { motion } from "framer-motion"
 import { CheckCircle } from "lucide-react"
 
->>>>>>> 5a48112 (TAX)
 
 const InstructionSection = () => {
     return (
         <section className="relative flex flex-col items-center justify-center py-20 px-6 bg-white overflow-hidden">
             {/* Badge */}
-<<<<<<< HEAD
-            <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.7 }}>
-=======
             <motion.div variants={fadeInDown} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.7 }}>
->>>>>>> 5a48112 (TAX)
                 <h2 className="text-sky-600 text-sm font-medium">TaxTrack simplifies EU VAT compliance</h2>
             </motion.div>
 
             {/* Header */}
             <motion.div
-<<<<<<< HEAD
-                variants={fadeInUp}
-=======
                 variants={fadeInDown}
->>>>>>> 5a48112 (TAX)
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.7 }}
@@ -115,11 +90,7 @@ const InstructionSection = () => {
                 return (
                     <motion.div
                         key={index}
-<<<<<<< HEAD
-                        variants={fadeInUp}
-=======
                         variants={fadeInDown}
->>>>>>> 5a48112 (TAX)
                         initial="hidden"
                         whileInView="show"
                         viewport={{ once: true, amount: 0.7 }}
@@ -127,16 +98,12 @@ const InstructionSection = () => {
                             } items-center justify-center gap-12 max-w-7xl w-full relative z-10 my-16`}
                     >
                         {/* Image Placeholder */}
-<<<<<<< HEAD
-                        <div className="flex-1 max-w-lg">
-=======
                         <motion.div
                             variants={slideInTop}
                             initial="hidden"
                             whileInView="show"
                             viewport={{ once: true, amount: 0.7 }}
                             className="flex-1 max-w-lg">
->>>>>>> 5a48112 (TAX)
                             <div className="bg-sky-50 border border-sky-100 rounded-xl p-8 h-[400px] flex items-center justify-center">
                                 <div className="text-center text-gray-400">
                                     <div className="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
@@ -153,11 +120,7 @@ const InstructionSection = () => {
                                     <p className="text-xs mt-1">{step.tag}</p>
                                 </div>
                             </div>
-<<<<<<< HEAD
-                        </div>
-=======
                         </motion.div>
->>>>>>> 5a48112 (TAX)
 
                         {/* Content */}
                         <div className="flex-1 max-w-lg">

@@ -284,7 +284,7 @@ export default function CorrectionStep({ onNext, onPrevious, currentStep, totalS
                     Previous
                 </Button>
                 <Button className="bg-sky-600 hover:bg-sky-700 text-white" disabled={!allIssuesResolved} onClick={onNext}>
-                    {allIssuesResolved ? "Continue to Review" : `Resolve ${pendingIssues} Issues`}
+                    {allIssuesResolved ? "Continue to Payment" : `Resolve ${pendingIssues} Issues`}
                 </Button>
             </motion.div>
         </div>

@@ -21,7 +21,10 @@ export default function StepIndicator({
 }: StepIndicatorProps) {
     return (
         <div className="mb-12 px-4">
-            <div className="flex items-center justify-center flex-wrap gap-4">
+            <div className="">
+                <h2 className="text-2xl font-semibold"><span className="text-blue text-sky-600 text-3xl">Q</span>HUUBE</h2>
+            </div>
+            <div className="flex items-center justify-center flex-wrap gap-4 -mt-5">
                 {steps.map((step, index) => (
                     <div key={step.id} className="flex items-center">
                         {/* Circle + Label container */}

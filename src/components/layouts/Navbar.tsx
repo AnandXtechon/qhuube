@@ -18,12 +18,12 @@ const Navbar = () => {
   ]
 
   return (
-    <nav className="sticky top-0 z-50 h-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 flex items-center justify-between px-4 md:px-8 lg:px-16 xl:px-40">
+    <nav className="sticky top-0 z-50 h-20 bg-white/95 backdrop-blur-sm  flex items-center justify-between px-4 md:px-8 lg:px-16 xl:px-40">
       {/* Logo */}
       <div className="flex items-center">
         <Link href="/" className="text-2xl font-bold hover:opacity-80 transition-opacity">
-          <span className="text-sky-600">Tax</span>
-          <span className="text-gray-900">Track</span>
+          <span className="text-sky-600 text-3xl">Q</span>
+          <span className="text-gray-900">HUUBE</span>
         </Link>
       </div>
 

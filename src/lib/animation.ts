@@ -628,3 +628,216 @@ export const pageFade: Variants = {
         },
     },
 }
+
+
+// Animation Variants
+export const heroVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            duration: 0.8,
+            staggerChildren: 0.2,
+        },
+    },
+}
+
+export const logoVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: {
+            type: "spring",
+            stiffness: 100,
+            damping: 15,
+        },
+    },
+}
+
+export const titleVariants: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.8,
+            ease: [0.25, 0.1, 0.25, 1],
+        },
+    },
+}
+
+export const subtitleVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.1, 0.25, 1],
+        },
+    },
+}
+
+export const badgeVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: {
+            type: "spring",
+            stiffness: 100,
+            damping: 15,
+            delay: 0.3,
+        },
+    },
+}
+
+export const cardsContainerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            duration: 0.6,
+            staggerChildren: 0.2,
+        },
+    },
+}
+
+export const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: (index: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 80,
+            damping: 20,
+            delay: index * 0.1,
+        },
+    }),
+}
+
+export const popularBadgeVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.8, y: -10 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 150,
+            damping: 15,
+            delay: 0.3,
+        },
+    },
+}
+
+export const cardHeaderVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.1, 0.25, 1],
+        },
+    },
+}
+
+export const featuresVariants: Variants = {
+    hidden: {},
+    visible: {
+        transition: {
+            staggerChildren: 0.05,
+        },
+    },
+}
+
+export const featureVariants: Variants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: (index: number) => ({
+        opacity: 1,
+        x: 0,
+        transition: {
+            duration: 0.4,
+            delay: index * 0.05,
+            ease: [0.25, 0.1, 0.25, 1],
+        },
+    }),
+}
+
+export const buttonVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.1, 0.25, 1],
+            delay: 0.2,
+        },
+    },
+}
+
+export const trustVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            duration: 0.8,
+            staggerChildren: 0.1,
+        },
+    },
+}
+
+export const trustTitleVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.1, 0.25, 1],
+        },
+    },
+}
+
+export const trustItemVariants: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (index: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            delay: index * 0.1,
+            ease: [0.25, 0.1, 0.25, 1],
+        },
+    }),
+}
+
+
+export const imageVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.95, y: 40 },
+    show: {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        transition: {
+            duration: 0.8,
+            ease: [0.25, 0.1, 0.25, 1],
+            delay: 0.4,
+        },
+    },
+};
+
+export const floatingVariants: Variants = {
+    animate: {
+        y: [-10, 10, -10],
+        transition: {
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+        }
+    }
+};
