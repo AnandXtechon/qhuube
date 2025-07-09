@@ -2,9 +2,9 @@
 import { NextResponse, type NextRequest } from "next/server"
 import Stripe from "stripe"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function GET(req: NextRequest, context: { params: Promise<{ sessionId: string }> }) {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
     try {
         // Await the params since they're now async in Next.js 15
         const { sessionId } = await context.params
