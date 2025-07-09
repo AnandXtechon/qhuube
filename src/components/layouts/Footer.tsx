@@ -32,7 +32,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="lg:col-span-1">
             <Link href="/" className="text-2xl font-bold tracking-tight text-black mb-4 inline-block">
-              <h2 className=""><span className="text-sky-600">Q</span>huube</h2>
+              <h2 className=""><span className="text-sky-600 text-3xl">Q</span>HUUBE</h2>
             </Link>
             <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-sm">
               TaxTrack helps European businesses automate VAT registration, reporting, and compliance — all in one place.
