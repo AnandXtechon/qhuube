@@ -67,7 +67,7 @@ const page = () => {
                             name: "Pay As You Go",
                             price: "€20",
                             amount: 20,
-                            period: "/month",
+                            period: "",
                             description:
                                 "Perfect for getting started with EU tax compliance",
                             features: [

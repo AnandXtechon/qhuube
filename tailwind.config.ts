@@ -27,6 +27,7 @@ const config: Config = {
                     "BlinkMacSystemFont",
                     "Segoe UI",
                     "sans-serif",
+                    "var(--font-quicksand)"
                 ],
             },
             fontSize: {
