@@ -27,7 +27,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="group flex items-center space-x-1 transition-all duration-200">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 shadow-lg transition-all duration-200">
+              <div className="flex text-center h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 shadow-lg transition-all duration-200">
                 <span className="text-xl font-bold text-white">Q</span>
               </div>
               <span className="text-xl font-bold text-gray-900">HUUBE</span>
