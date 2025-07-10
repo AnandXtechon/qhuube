@@ -64,6 +64,11 @@ export interface OverviewStepProps {
     correctedData: any[]
 }
 
+export interface PaymentStepProps {
+    onNext: () => void
+    onPrevious: () => void
+}
+
 
 export interface PricingCardProps {
     plan: {
