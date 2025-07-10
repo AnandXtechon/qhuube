@@ -54,38 +54,14 @@ const page = () => {
 
             {/* Pricing Card Section */}
             <motion.div
-                className="pb-24 px-6"
+                className="pb-24 px-4 sm:px-6 lg:px-10 max-w-4xl mx-auto"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={cardsContainerVariants}
             >
-                <div className="max-w-2xl mx-auto">
-                    <PricingCard
-                        plan={{
-                            id: "pay-as-you-go",
-                            name: "Pay As You Go",
-                            price: "€20",
-                            amount: 20,
-                            period: "",
-                            description:
-                                "Perfect for getting started with EU tax compliance",
-                            features: [
-                                "VAT registration in 27 EU countries",
-                                "Real-time tax calculations",
-                                "Automated compliance reporting",
-                                "Multi-currency support",
-                                "Email support",
-                                "Basic analytics dashboard",
-                                "Monthly compliance updates",
-                            ],
-                            popular: false,
-                            buttonText: "Start Monthly Plan",
-                            color: "from-sky-500 to-sky-600",
-                            bgColor: "from-sky-50 to-blue-50",
-                        }}
-                        index={0}
-                    />
+                <div className="flex justify-center">
+                    <PricingCard />
                 </div>
             </motion.div>
 
@@ -94,5 +70,7 @@ const page = () => {
         </div>
     )
 }
+
+
 
 export default page

@@ -7,6 +7,7 @@ import Herosection from "@/components/layouts/Herosection";
 import InstructionSection from "@/components/layouts/InstructionSection";
 import Navbar from "@/components/layouts/Navbar";
 import TaxComplianceSection from "@/components/layouts/TaxComplianceSection";
+import VideoSection from "@/components/layouts/VideoSection";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <ActionPreviewSection />
       {/* <ComplianceSection /> */}
       <ConversionSection />
+      <VideoSection />
       <FinalCTASection />
       <Footer />
    </div>

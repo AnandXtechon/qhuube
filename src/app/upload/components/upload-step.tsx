@@ -74,7 +74,7 @@ const UploadStep = ({
         uploadedFiles.every((file) => uploadProgress[file.name] >= 100);
 
     return (
-        <div>
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
             {/* Header */}
             <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="text-center mb-12">
                 {/* <div className="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
@@ -90,7 +90,7 @@ const UploadStep = ({
             </motion.div>
 
             {/* Upload Area */}
-            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8 max-w-4xl ml-32">
+            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8 mb-8 max-w-4xl w-full mx-auto">
                 <div
                     className={`relative border-2 border-dashed rounded-xl p-12 text-center ${dragActive ? "border-sky-500 bg-sky-50" : "border-gray-300 hover:border-sky-400 hover:bg-gray-50"}`}
                     onDragEnter={handleDrag}
@@ -103,21 +103,27 @@ const UploadStep = ({
                         multiple
                         accept=".csv,.txt,.xls,.xlsx"
                         onChange={handleFileInput}
-                        className="absolute inset-0 w-full- h-full opacity-0 cursor-pointer"
+                        className="absolute inset-0 w-full md:h-full opacity-0 cursor-pointer"
                     />
                     <div className="space-y-6">
                         <div className="flex items-center justify-center mx-auto">
                             <Image
                                 src="/icons/document.png"
                                 alt="document-icon"
-                                width={100}
-                                height={100}
-                                className="object-cover"
+                                width={80}
+                                height={80}
+                                className="object-cover w-20 sm:w-24"
                             />
+
                         </div>
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">Drag and drop your files here</h3>
-                            <p className="text-gray-600 mb-4">or click to browse from your computer</p>
+                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                                Drag and drop your files here
+                            </h3>
+                            <p className="text-sm sm:text-base text-gray-600 mb-4">
+                                or click to browse from your computer
+                            </p>
+
                             <Button className="bg-sky-600 hover:bg-sky-700 text-white">Choose Files</Button>
                         </div>
                         <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500">
@@ -131,7 +137,7 @@ const UploadStep = ({
 
             {/* Uploaded Files */}
             {uploadedFiles.length > 0 && (
-                <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8  max-w-4xl ml-32">
+                <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8 mb-8 max-w-4xl w-full mx-auto">
                     <h3 className="text-xl font-semibold text-gray-900 mb-6">Uploaded Files</h3>
                     <div className="space-y-4">
                         {uploadedFiles.map((file, index) => {
@@ -185,7 +191,7 @@ const UploadStep = ({
             )}
 
             {/* Navigation */}
-            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="flex justify-between items-center  max-w-4xl ml-32">
+            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="flex sm:flex-row justify-between items-center gap-4 max-w-4xl w-full mx-auto">
                 <Button variant="outline" disabled className="text-gray-400 bg-transparent">Previous</Button>
                 <Button className="bg-sky-600 hover:bg-sky-700 text-white" disabled={!allFilesUploaded} onClick={onNext}>
                     Continue

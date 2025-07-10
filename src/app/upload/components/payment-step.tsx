@@ -1,70 +1,41 @@
-import { motion } from "framer-motion"
-import PricingCard from "@/app/pricing/components/PricingCard"
-import { cardsContainerVariants } from "@/lib/animation"
+import { motion } from "framer-motion";
+import PricingCard from "@/app/pricing/components/PricingCard";
+import { cardsContainerVariants, fadeInLeft } from "@/lib/animation";
 
 const PaymentStep = () => {
-  return (
+    return (
         <motion.div
-            className="pb-20 px-6"
+            className="pb-20 px-4 sm:px-6 lg:px-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={cardsContainerVariants}
         >
             <div className="max-w-4xl mx-auto">
-                <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-                    {plans.map((plan, index) => (
-                        <PricingCard key={plan.id} plan={plan} index={index} />
-                    ))}
+                {/* Matching Header */}
+                <motion.div
+                    variants={fadeInLeft}
+                    initial="hidden"
+                    animate="show"
+                    className="text-center mb-12"
+                >
+                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                        Secure <span className="text-sky-600">Your Compliance</span>
+                    </h2>
+                    <p className="text-lg font-medium text-gray-600 leading-relaxed max-w-2xl mx-auto">
+                        Final step — complete a one-time payment to process and download your tax-compliant files.
+                    </p>
+                </motion.div>
+
+                {/* Pricing Card */}
+                <div className="flex justify-center">
+                    <div className="w-full max-w-md">
+                        <PricingCard />
+                    </div>
                 </div>
             </div>
         </motion.div>
-    )
-}
+    );
+};
 
-const plans = [
-    {
-        id: "monthly",
-        name: "Monthly Plan",
-        price: "€20",
-        amount: 20,
-        period: "/month",
-        description: "Perfect for getting started with EU tax compliance",
-        features: [
-            "VAT registration in 27 EU countries",
-            "Real-time tax calculations",
-            "Automated compliance reporting",
-            "Multi-currency support",
-            "Email support",
-            "Basic analytics dashboard",
-            "Monthly compliance updates",
-        ],
-        popular: false,
-        buttonText: "Start Monthly Plan",
-        color: "from-sky-500 to-sky-600",
-        bgColor: "from-sky-50 to-blue-50",
-    },
-    {
-        id: "yearly",
-        name: "Yearly Plan",
-        price: "€199",
-        amount: 199,
-        period: "/year",
-        originalPrice: "€240",
-        description: "Best value for serious businesses - Save $41 annually",
-        features: [
-            "Everything in Monthly Plan",
-            "Priority customer support",
-            "Advanced analytics & insights",
-            "Custom compliance workflows",
-            "Early access to new features",
-            "White-label reporting",
-        ],
-        popular: true,
-        buttonText: "Start Yearly Plan",
-        color: "from-sky-600 to-blue-600",
-        bgColor: "from-sky-50 to-blue-50",
-    },
-]
-
-export default PaymentStep
+export default PaymentStep;

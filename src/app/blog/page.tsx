@@ -101,7 +101,7 @@ const BlogPage = () => {
     ]
 
     return (
-        <section className="py-20 px-6 bg-white">
+        <section className="py-10 px-6 bg-white">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <motion.header

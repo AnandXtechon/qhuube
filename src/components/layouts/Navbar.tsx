@@ -21,15 +21,14 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md shadow-sm">
+    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="group flex items-center space-x-1 transition-all duration-200">
-              <div className="flex text-center h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 shadow-lg transition-all duration-200">
-                <span className="text-xl font-bold text-white">Q</span>
-              </div>
+            <Link href="/" className="">
+                <span className="text-2xl font-bold text-sky-600">Q</span>
+            
               <span className="text-xl font-bold text-gray-900">HUUBE</span>
             </Link>
           </div>
@@ -52,7 +51,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Link
               href="/contact"
-              className="px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:text-sky-600 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-sm bg-gray-200 font-medium text-gray-900 transition-all duration-200 hover:text-sky-600 rounded-lg hover:bg-gray-50"
             >
               Contact
             </Link>
@@ -60,36 +59,35 @@ const Navbar = () => {
               asChild
               className="bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
-              <Link href="/get-started">Get Started</Link>
+              <Link href="/upload">Get Started</Link>
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 text-gray-700 hover:text-sky-600 hover:bg-sky-50 transition-all duration-200"
-                >
-                  <Menu className="h-8 w-8" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                  <button className="p-2 sm:p-4 rounded-md hover:bg-blue-100 transition-colors">
+                    <Menu className="h-6 w-6 sm:h-8 sm:w-8 text-gray-700" />
+                    <span className="sr-only">Toggle menu</span>
+                  </button>
+                </SheetTrigger>
+              </Sheet>
+
               <SheetContent side="right" className="w-full sm:w-[400px] p-0 bg-white/95 backdrop-blur-md">
                 <div className="flex h-full flex-col">
                   {/* Mobile Header */}
                   <div className="flex items-center justify-between border-b border-gray-100 p-6">
                     <Link
                       href="/"
-                      className="group flex items-center space-x-1  transition-all duration-200"
+                      className="group flex  transition-all duration-200"
                       onClick={handleLinkClick}
                     >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-sky-600">
-                        <span className="text-lg font-bold text-white">Q</span>
-                      </div>
-                      <span className="text-lg font-bold text-gray-900">HUUBE</span>
+                      
+                      <h2 className="text-xl font-bold text-sky-600">Q<span className="text-lg font-bold text-gray-900">HUUBE</span></h2>
+                      
+                      
                     </Link>
                     <SheetClose asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -105,7 +103,7 @@ const Navbar = () => {
                         <Link
                           href={item.href}
                           key={item.name}
-                          className="flex items-center rounded-xl px-4 py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-sky-50 hover:text-sky-600 hover:translate-x-1"
+                          className="flex items-center rounded-xl px-4 py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-gray-100 hover:text-sky-600 hover:translate-x-1"
                           onClick={handleLinkClick}
                           style={{
                             animationDelay: `${index * 50}ms`,
@@ -118,7 +116,7 @@ const Navbar = () => {
                       ))}
                       <Link
                         href="/contact"
-                        className="flex items-center rounded-xl px-4 py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-sky-50 hover:text-sky-600 hover:translate-x-1"
+                        className="flex items-center rounded-xl px-4 py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-gray-100 hover:text-sky-600 hover:translate-x-1"
                         onClick={handleLinkClick}
                         style={{
                           animationDelay: `${navItems.length * 50}ms`,
@@ -137,7 +135,7 @@ const Navbar = () => {
                       asChild
                       className="w-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                     >
-                      <Link href="/get-started" onClick={handleLinkClick}>
+                      <Link href="/upload" onClick={handleLinkClick}>
                         Get Started
                       </Link>
                     </Button>

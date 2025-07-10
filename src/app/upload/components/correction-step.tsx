@@ -125,7 +125,7 @@ export default function CorrectionStep({ onNext, onPrevious, currentStep, totalS
                 initial="hidden"
                 animate="show"
                 transition={{ delay: 0.1 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-2"
             >
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <div className="flex items-center gap-4">
@@ -170,7 +170,7 @@ export default function CorrectionStep({ onNext, onPrevious, currentStep, totalS
                 initial="hidden"
                 animate="show"
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-8"
+                className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-8"
             >
                 <div className="p-6 border-b border-gray-200">
                     <h3 className="text-xl font-semibold text-gray-900">Tax Compliance Issues</h3>
@@ -250,27 +250,29 @@ export default function CorrectionStep({ onNext, onPrevious, currentStep, totalS
             </motion.div>
 
             {/* Progress Summary */}
-            {correctedIssues > 0 && (
-                <motion.div
-                    variants={fadeInLeft}
-                    initial="hidden"
-                    animate="show"
-                    transition={{ delay: 0.4 }}
-                    className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-8"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                            <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="px-2">
+                {correctedIssues > 0 && (
+                    <motion.div
+                        variants={fadeInLeft}
+                        initial="hidden"
+                        animate="show"
+                        transition={{ delay: 0.4 }}
+                        className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-8"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <CheckCircle className="w-6 h-6 text-green-600" />
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-green-900">Correction Progress</h4>
+                                <p className="text-green-700">
+                                    {correctedIssues} of {totalIssues} issues have been resolved
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="font-semibold text-green-900">Correction Progress</h4>
-                            <p className="text-green-700">
-                                {correctedIssues} of {totalIssues} issues have been resolved
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
+                    </motion.div>
+                )}
+            </div>
 
             {/* Navigation */}
             <motion.div
@@ -278,7 +280,7 @@ export default function CorrectionStep({ onNext, onPrevious, currentStep, totalS
                 initial="hidden"
                 animate="show"
                 transition={{ delay: 0.6 }}
-                className="flex justify-between items-center"
+                className="flex justify-between items-center px-2"
             >
                 <Button variant="outline" onClick={onPrevious}>
                     Previous

@@ -1,274 +1,244 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
-import * as motion from "motion/react-client"
-import type React from "react"
-import type { Variants } from "motion/react"
-import { FileText, Calculator, Globe } from "lucide-react"
-import VATCard from "./VATCard"
+import React from 'react';
+import { FileText, Calculator, BarChart3, CheckCircle } from 'lucide-react';
+import Image from 'next/image';
 
 const ConversionSection = () => {
     const sections = [
         {
             id: 1,
-            title: "VAT Registration Made Simple",
-            subtitle: "Streamline your EU VAT registration process",
+            title: "Automated Invoice Processing",
+            subtitle: "Faster billing, zero manual errors",
             icon: FileText,
-            color: "from-blue-600 to-cyan-500",
-            bgColor: "from-blue-50 to-cyan-50",
+            color: "from-sky-500 to-sky-600",
+            bgColor: "from-sky-50 to-blue-50",
             features: [
-                "One-click registration across 27 EU countries",
-                "Real-time status tracking and updates",
-                "Automated document generation",
-                "Multi-language support for all jurisdictions",
+                "One-click invoice generation",
+                "Automated payment reminders",
+                "Multi-currency & tax-compliant formats",
+                "Live payment tracking with Stripe sync",
             ],
-            stats: { value: "27", label: "EU Countries" },
+            stats: { value: "98%", label: "Faster Processing" },
             description:
-                "Our automated system handles VAT registration across the entire European Union, saving you time and ensuring compliance from day one.",
+                "Accelerate your billing workflow with Stripe-powered automation—from invoice creation to secure collection—all in real time.",
+            imageSrc: "/images/img3.jpeg",
+            overlayContent: {
+                badge: "PROCESSING",
+                title: "Invoice #2024-001",
+                subtitle: "€2,450.00",
+                status: "paid",
+            },
         },
         {
             id: 2,
-            title: "Automated Tax Calculations",
-            subtitle: "Precise calculations every time",
+            title: "Real-Time Financial Analytics",
+            subtitle: "Smarter decisions, faster growth",
             icon: Calculator,
-            color: "from-green-600 to-emerald-500",
-            bgColor: "from-green-50 to-emerald-50",
+            color: "from-sky-500 to-sky-600",
+            bgColor: "from-sky-50 to-blue-50",
             features: [
-                "Real-time tax rate updates",
-                "Multi-currency support",
-                "Automated rounding rules",
-                "Historical rate tracking",
+                "Instant dashboards with live metrics",
+                "AI-powered cash flow forecasting",
+                "Smart expense classification",
+                "Custom reports & KPI tracking",
             ],
-            stats: { value: "99.9%", label: "Accuracy Rate" },
+            stats: { value: "24/7", label: "Live Monitoring" },
             description:
-                "Never worry about tax calculation errors again. Our system automatically calculates taxes based on the latest rates and regulations for each EU country.",
+                "Gain always-on visibility into your financial health. Our real-time analytics help you identify trends, control costs, and fuel strategic growth.",
+            imageSrc: "/images/img2.webp",
+            overlayContent: {
+                badge: "ANALYTICS",
+                title: "Revenue Growth",
+                subtitle: "+23.5% this month",
+                status: "trending",
+            },
         },
         {
             id: 3,
-            title: "Cross-Border Compliance",
-            subtitle: "Navigate complex regulations with ease",
-            icon: Globe,
-            color: "from-purple-600 to-violet-500",
-            bgColor: "from-purple-50 to-violet-50",
+            title: "Stripe-Powered Payment Gateway",
+            subtitle: "Built for scale, secured for trust",
+            icon: BarChart3,
+            color: "from-sky-500 to-sky-600",
+            bgColor: "from-sky-50 to-blue-50",
             features: [
-                "GDPR compliant data handling",
-                "Local regulation compliance",
-                "Multi-language documentation",
-                "Country-specific reporting",
+                "Stripe-integrated checkout experience",
+                "Bank-level encryption & fraud detection",
+                "PCI DSS Level 1 compliant infrastructure",
+                "Supports cards, wallets, bank transfers, and more",
             ],
-            stats: { value: "100%", label: "GDPR Compliant" },
+            stats: { value: "99.9%", label: "Uptime SLA" },
             description:
-                "Handle complex cross-border transactions with confidence. Our platform ensures you're compliant with regulations in every EU member state.",
+                "Accept payments globally with Stripe's enterprise-grade infrastructure—secure, reliable, and optimized for conversions.",
+            imageSrc: "/images/img1.jpeg",
+            overlayContent: {
+                badge: "SECURE",
+                title: "Transaction Complete",
+                subtitle: "€1,250.00 processed",
+                status: "success",
+            },
         },
-    ]
+    ];
+      
 
     return (
-        <section style={containerStyle}>
-            {/* Enhanced Title Section */}
-            <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{
-                    once: true,
-                    amount: 0.2,
-                    margin: "0px 0px -100px 0px", // Start animation earlier
-                }}
-                variants={titleVariants}
-                style={titleStyle}
-            >
-                <div className="max-w-6xl mx-auto text-center">
-                    <motion.h1
-                        className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight mb-2"
-                        variants={titleTextVariants}
-                    >
-                        The all in one <span className="bg-clip-text text-sky-600">finance platform</span>{" "}
-                        {`you've been looking for`}
-                    </motion.h1>
-                    <motion.p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto" variants={subtitleVariants}>
-                        Streamline your financial operations with our comprehensive suite of tools designed for modern businesses
-                    </motion.p>
+        <div className="relative bg-white">
+            {/* Header Section */}
+            <div className="relative z-10 py-16 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-4xl mx-auto text-center">
+                    <div className="animate-fade-in-up">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+                            The modern{" "}
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-sky-600">
+                                finance platform
+                            </span>{" "}
+                            for growing businesses
+                        </h1>
+                        <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                            Streamline your financial operations with powerful tools designed for efficiency and growth
+                        </p>
+                    </div>
                 </div>
-            </motion.div>
+            </div>
 
-            {/* Optimized Stacked Cards */}
-            {sections.map((data, i) => (
-                <CardContainer key={data.id} data={data} index={i} />
-            ))}
-        </section>
-    )
+            {/* Sections */}
+            <div className="space-y-24 pb-24">
+                {sections.map((section, index) => (
+                    <SectionCard key={section.id} section={section} index={index} />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+interface SectionCardProps {
+    section: any;
+    index: number;
 }
 
-interface CardContainerProps {
-    data: {
-        id: number
-        title: string
-        subtitle: string
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        icon: any
-        color: string
-        bgColor: string
-        features: string[]
-        stats: { value: string; label: string }
-        description: string
-    }
-    index: number
-}
+function SectionCard({ section, index }: SectionCardProps) {
+    const isEven = index % 2 === 0;
 
-function CardContainer({ data, index }: CardContainerProps) {
     return (
-        <motion.div
-            className={`card-container-${index}`}
-            style={cardContainerStyle}
-            initial="offscreen"
-            whileInView="onscreen"
-            viewport={{
-                amount: 0.15, // Reduced for earlier trigger
-                once: false,
-                margin: "0px 0px -300px 0px", // Much earlier trigger for smoother experience
-            }}
-        >
-            {/* Simplified background effect */}
-            <div
-                style={{
-                    ...splashStyle,
-                    background: `linear-gradient(120deg, hsl(${200 + index * 40}, 60%, 90%), hsl(${220 + index * 40}, 70%, 95%))`,
-                }}
-            />
+        <div className="relative animate-fade-in-up">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className={`grid lg:grid-cols-2 gap-12 items-center ${isEven ? "" : "lg:grid-flow-col-dense"}`}>
 
-            {/* Optimized Card Animation */}
-            <motion.div style={cardStyle} variants={cardVariants} custom={index}>
-                <VATCard
-                    title={data.title}
-                    subtitle={data.subtitle}
-                    description={data.description}
-                    icon={<data.icon className="w-8 h-8 text-white" />}
-                    color={data.color}
-                    bgColor={data.bgColor}
-                    features={data.features}
-                    stats={data.stats}
-                    imageSrc="/images/template-1.png"
-                />
-            </motion.div>
-        </motion.div>
-    )
+                    {/* Content Side */}
+                    <div className={`space-y-6 ${isEven ? "lg:pr-8" : "lg:pl-8 lg:col-start-2"}`}>
+
+                        {/* Icon and Badge */}
+                        <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${section.color} p-3 shadow-sm`}>
+                                <section.icon className="w-full h-full text-white" />
+                            </div>
+                            <div className={`px-3 py-1.5 rounded-full bg-gradient-to-r ${section.bgColor} border border-sky-100`}>
+                                <span className="text-sm font-medium text-sky-700">{section.subtitle}</span>
+                            </div>
+                        </div>
+
+                        {/* Title and Description */}
+                        <div className="space-y-4">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                                {section.title}
+                            </h2>
+                            <p className="text-lg text-gray-600 leading-relaxed">
+                                {section.description}
+                            </p>
+                        </div>
+
+                        {/* Features List */}
+                        <div className="space-y-3">
+                            {section.features.map((feature: string, idx: number) => (
+                                <div key={idx} className="flex items-center gap-3 group">
+                                    <div className="w-5 h-5 rounded-full bg-sky-100 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-200 transition-colors">
+                                        <CheckCircle className="w-3 h-3 text-sky-600" />
+                                    </div>
+                                    <span className="text-gray-700 font-medium">{feature}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Stats */}
+                        <div className="flex items-center gap-4 pt-4">
+                            <div className="text-center">
+                                <div className={`text-3xl font-bold bg-gradient-to-r ${section.color} bg-clip-text text-transparent`}>
+                                    {section.stats.value}
+                                </div>
+                                <div className="text-sm text-gray-600 font-medium">{section.stats.label}</div>
+                            </div>
+                            <div className="w-px h-8 bg-gray-200"></div>
+                            <div className="text-sm text-gray-600">
+                                Trusted by 10,000+ businesses
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Image Side with Overlay */}
+                    <div className={`relative ${isEven ? "lg:pl-8" : "lg:pr-8 lg:col-start-1 lg:row-start-1"}`}>
+                        <div className="relative group">
+
+                            {/* Main Image Container */}
+                            <div className="relative overflow-hidden rounded-2xl shadow-lg bg-white hover:shadow-xl transition-all duration-300">
+                                <Image
+                                    src={section.imageSrc}
+                                    alt={section.title}
+                                    width={200}
+                                    height={100}
+                                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+
+                                {/* Overlay Content */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent">
+
+                                    {/* Top Badge */}
+                                    <div className="absolute top-4 left-4 animate-slide-in-left">
+                                        <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm border border-white/20">
+                                            <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
+                                            <span className="text-xs font-semibold text-gray-800">
+                                                {section.overlayContent.badge}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Main Content Card */}
+                                    <div className="absolute bottom-4 left-4 right-4 animate-slide-in-up">
+                                        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20">
+                                            <div className="space-y-2">
+
+                                                {/* Title Section */}
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <h3 className="text-base font-bold text-gray-900">
+                                                            {section.overlayContent.title}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-600">
+                                                            {section.overlayContent.subtitle}
+                                                        </p>
+                                                    </div>
+                                                    <div
+                                                        className={`w-3 h-3 rounded-full ${section.overlayContent.status === "paid" || section.overlayContent.status === "success"
+                                                                ? "bg-green-500"
+                                                                : section.overlayContent.status === "trending"
+                                                                    ? "bg-sky-500 animate-pulse"
+                                                                    : "bg-gray-400"
+                                                            }`}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Decorative Elements */}
+                            <div className={`absolute -z-10 -top-2 -right-2 w-full h-full rounded-2xl bg-gradient-to-r ${section.color} opacity-10`}></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
 
-// Ultra-smooth Animation Variants
-const titleVariants: Variants = {
-    hidden: {
-        opacity: 0,
-    },
-    visible: {
-        opacity: 1,
-        transition: {
-            duration: 1.0,
-            ease: [0.25, 0.1, 0.25, 1], // Custom easing for ultra-smooth feel
-            staggerChildren: 0.2,
-        },
-    },
-}
-
-const titleTextVariants: Variants = {
-    hidden: {
-        opacity: 0,
-        y: 30,
-    },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 1.2,
-            ease: [0.25, 0.1, 0.25, 1], // Smooth cubic-bezier
-        },
-    },
-}
-
-const subtitleVariants: Variants = {
-    hidden: {
-        opacity: 0,
-        y: 20,
-    },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 1.0,
-            ease: [0.25, 0.1, 0.25, 1],
-        },
-    },
-}
-
-const cardVariants: Variants = {
-    offscreen: {
-        y: 120, // Reduced distance for smoother animation
-        opacity: 0,
-        scale: 0.95,
-    },
-    onscreen: {
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        transition: {
-            type: "spring",
-            stiffness: 60, // Reduced for smoother feel
-            damping: 25, // Increased for less bounce
-            mass: 1, // Balanced mass
-            duration: 1.2,
-        },
-    },
-}
-
-// Performance-optimized Styles
-const containerStyle: React.CSSProperties = {
-    margin: "0 auto",
-    maxWidth: "100%",
-    paddingBottom: 200,
-    width: "100%",
-    background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
-    contain: "layout style paint", // Performance optimization
-}
-
-const titleStyle: React.CSSProperties = {
-    padding: "80px 20px 10px",
-    position: "relative",
-    zIndex: 10,
-    contain: "layout style", // Performance hint
-}
-
-const cardContainerStyle: React.CSSProperties = {
-    overflow: "hidden",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    paddingTop: 0,
-    marginBottom: -140, // Slightly reduced for smoother stacking
-    minHeight: "100vh",
-    contain: "layout style", // Performance optimization
-    willChange: "transform", // Hint for GPU acceleration
-}
-
-const splashStyle: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    clipPath: `polygon(0% 25%, 100% 0%, 100% 75%, 0% 100%)`,
-    opacity: 0.3, // Slightly reduced for better performance
-    pointerEvents: "none", // Prevent interaction issues
-}
-
-const cardStyle: React.CSSProperties = {
-    width: "90%",
-    maxWidth: 1200,
-    height: 700,
-    borderRadius: 24,
-    transformOrigin: "center center",
-    position: "relative",
-    zIndex: 5,
-    transform: "translate3d(0, 0, 0)", // Hardware acceleration
-    backfaceVisibility: "hidden", // Prevent flickering
-    contain: "layout style paint", // Performance optimization
-    willChange: "transform, opacity", // GPU acceleration hint
-}
-
-export default ConversionSection
+export default ConversionSection;

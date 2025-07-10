@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ session
         const { sessionId } = await context.params
 
         const session = await stripe.checkout.sessions.retrieve(sessionId, {
-            expand: ["line_items", "payment_intent"],
+            expand: ["customer","line_items", "payment_intent"],
         })
 
         return NextResponse.json(session)

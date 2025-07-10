@@ -80,5 +80,6 @@ export interface PricingCardProps {
         color: string
         bgColor: string
     }
-    index: number
 }
+
+

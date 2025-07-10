@@ -20,7 +20,7 @@ const TaxComplianceSection = () => {
                             <Button
                                 variant="default"
                                 size="lg"
-                                className="bg-sky-500 hover:bg-gray-800 text-white px-8 py-4 text-base font-medium group rounded-md"
+                                className="bg-sky-600 hover:bg-gray-800 text-white px-8 py-4 text-base font-medium group rounded-md"
                             >
                                 Get Started
                                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />

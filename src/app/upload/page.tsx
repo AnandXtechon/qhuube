@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import UploadStep from "./components/upload-step"
 import OverviewStep from "./components/overview-step"
@@ -8,9 +8,20 @@ import CorrectionStep from "./components/correction-step"
 import StepIndicator from "./components/step-indicator"
 import { useUploadStore } from "@/store/uploadStore"
 import PaymentStep from "./components/payment-step"
+import { useSearchParams } from "next/navigation"
 
 const VATComplianceWizard = () => {
-    const [currentStep, setCurrentStep] = useState(1)
+
+    const searchParams = useSearchParams()
+    const[currentStep, setCurrentStep] = useState(1)
+
+    useEffect(() => {
+        const stepParam = Number(searchParams.get("step"))
+        if (!isNaN(stepParam) && stepParam >= 1 && stepParam <= 4) {
+            setCurrentStep(stepParam)
+        }
+    }, [searchParams])
+
     const { uploadedFiles, setUploadedFiles } = useUploadStore()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [correctedData, setCorrectedData] = useState<any[]>([])
@@ -45,7 +56,7 @@ const VATComplianceWizard = () => {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white-50 to-blue-50 py-8 px-6">
+        <div className="min-h-screen bg-gradient-to-br from-white-50 to-blue-50 py-8 px-0 sm:px-2 md:px-6">
             <div className={`mx-auto w-full max-w-6xl`}>
                 <StepIndicator
                     steps={steps}

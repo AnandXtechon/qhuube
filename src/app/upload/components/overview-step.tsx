@@ -90,7 +90,7 @@ export default function OverviewStep({
     };
 
     return (
-        <div>
+        <div className="px-2">
             {/* Header */}
             <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="text-center mb-12">
                 <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
