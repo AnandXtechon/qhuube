@@ -3,9 +3,29 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, ArrowUpRight } from "lucide-react"
 import { getPosts } from "../get-posts"
+import type { Metadata } from "next"
 
-export default async function BlogPost({ params }: { params: { slug: string } }) {
-    const post = await getBlogBySlug(params.slug)
+type Props = {
+    params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug } = await params
+    const post = await getBlogBySlug(slug)
+    return {
+        title: post?.title || "Post not found",
+        description: post?.summary,
+    }
+}
+
+export async function generateStaticParams() {
+    const posts = await getPosts()
+    return posts.map((post) => ({ slug: post.slug }))
+}
+
+export default async function BlogPost({ params }: Props) {
+    const { slug } = await params
+    const post = await getBlogBySlug(slug)
 
     if (!post) {
         return (
@@ -30,8 +50,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
     }
 
     const posts = await getPosts()
-    const moreArticles = posts.filter(p => p.slug !== post.slug).slice(0, 3)
-
+    const moreArticles = posts.filter((p) => p.slug !== post.slug).slice(0, 3)
 
     return (
         <div className="min-h-screen bg-white">
@@ -51,7 +70,6 @@ export default async function BlogPost({ params }: { params: { slug: string } })
                 {/* Header */}
                 <header className="mb-12">
                     <h1 className="text-4xl md:text-5xl font-medium text-gray-900 leading-tight mb-6">{post.title}</h1>
-
                     {post.summary && <p className="text-xl text-gray-600 leading-relaxed mb-8">{post.summary}</p>}
 
                     {/* Meta information */}
@@ -98,29 +116,6 @@ export default async function BlogPost({ params }: { params: { slug: string } })
                     />
                 </div>
 
-                {/* Author Section
-                <div className="mt-16 pt-8 border-t border-gray-200">
-                    <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-medium">
-                            {(post.author || "A")[0]}
-                        </div>
-                        <div>
-                            <h3 className="font-medium text-gray-900 mb-1">{post.author}</h3>
-                            <p className="text-gray-600 text-sm mb-3">
-                                Content creator and technology enthusiast passionate about sharing insights on modern web development.
-                            </p>
-                            <Link
-                                href={`/author/${post.author?.toLowerCase().replace(/\s+/g, "-")}`}
-                                className="text-blue-600 hover:text-blue-700 text-sm inline-flex items-center gap-1"
-                            >
-                                View profile
-                                <ArrowUpRight className="w-3 h-3" />
-                            </Link>
-                        </div>
-                    </div>
-                </div> */}
-
-                {/* Related Posts or Back to Blog */}
                 {/* More Articles */}
                 {moreArticles.length > 0 && (
                     <div className="mt-20 border-t border-gray-200 pt-12">
@@ -157,7 +152,6 @@ export default async function BlogPost({ params }: { params: { slug: string } })
                         </div>
                     </div>
                 )}
-
             </article>
         </div>
     )
