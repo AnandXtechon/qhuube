@@ -18,7 +18,7 @@ interface StepIndicatorProps {
 export default function StepIndicator({
     steps,
     currentStep,
-    onStepClick,
+    // onStepClick,
 }: StepIndicatorProps) {
     return (
         <div className="mb-10 px-4">
@@ -44,7 +44,7 @@ export default function StepIndicator({
                                             ? "bg-sky-500 border-sky-500 text-white"
                                             : "bg-white border-gray-300 text-gray-400"
                                     }`}
-                                onClick={() => onStepClick(step.id)}
+                                // onClick={() => onStepClick(step.id)}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >

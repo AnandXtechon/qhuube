@@ -1,8 +1,10 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 const FinalCTASection = () => {
+    const router = useRouter()
     return (
         <section className="relative py-20 px-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
             {/* Background decorations */}
@@ -25,6 +27,7 @@ const FinalCTASection = () => {
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-in-up animation-delay-400">
                     <Button
+                        onClick={() => router.push("/upload")}
                         size="lg"
                         className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-8 py-4 text-lg hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                     >

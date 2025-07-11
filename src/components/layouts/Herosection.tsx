@@ -38,7 +38,7 @@ const HeroSectionDashboard = () => {
                     <motion.div variants={fadeInUp}>
                         <Link href="/upload">
                             <motion.button
-                                className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 mx-auto"
+                                className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 mx-auto cursor-pointer"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
@@ -69,7 +69,7 @@ const HeroSectionDashboard = () => {
                         <div className="absolute -top-6 -right-6 bg-white rounded-2xl shadow-xl border border-gray-200 py-3 px-2 backdrop-blur-md w-72 animate-fade-in-up">
                             <div className="text-center">
                                 {/* Stat number */}
-                                <div className="text-3xl font-bold text-blue-600 mb-1 border-b">100%</div>
+                                <div className="text-3xl font-bold text-blue-600 mb-1 border-b pb-2">100%</div>
 
                                 {/* Label */}
                                 <div className="text-sm font-medium text-gray-700 mb-3">EU Tax Compliance Coverage</div>

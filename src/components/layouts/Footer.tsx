@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link"
 import { Mail, Phone, MapPin, Twitter, Linkedin } from "lucide-react"
 
@@ -25,10 +26,10 @@ const Footer = () => {
   ]
 
   return (
-    <footer className="bg-white border-t border-gray-200" role="contentinfo">
+    <footer className="bg-white border-t border-gray-200 overflow-hidden" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer */}
-        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="lg:col-span-1">
             <Link href="/" className="text-2xl font-bold tracking-tight text-black mb-4 inline-block">

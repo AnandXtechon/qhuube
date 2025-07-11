@@ -4,7 +4,8 @@
 
 import { fadeInDown, slideInTop } from "@/lib/animation"
 import { motion, AnimatePresence } from "framer-motion"
-import { CheckCircle, Upload, FileText, FileSpreadsheet, File, Check, Zap } from "lucide-react"
+import { CheckCircle, FileText, FileSpreadsheet, File, Check, Zap } from "lucide-react"
+import Image from "next/image"
 import { useState, useEffect } from "react"
 
 const StepOne = () => {
@@ -119,7 +120,12 @@ const StepOne = () => {
                                     }}
                                     className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-sky-100 to-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4"
                                 >
-                                    <Upload className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-sky-600" />
+                                    <Image
+                                        src="/icons/document.png"
+                                        alt="document"
+                                        width={100}
+                                        height={100}
+                                        className="w-12 h-12 sm:w-10 sm:h-10 lg:w-14 lg:h-14 text-sky-600" />
                                 </motion.div>
                                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                                     {isDragOver ? "Release to upload!" : "Drop files here"}
