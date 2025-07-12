@@ -70,7 +70,7 @@ const SuccessPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white flex items-center justify-center p-4">
-            <div className="max-w-md w-full">
+            <div className="max-w-md w-full bg-white shadow-md p-8 rounded-lg">
                 {/* Success Header */}
                 <div className="text-center mb-8">
                     <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -152,12 +152,12 @@ const SuccessPage = () => {
                     >
                         Continue to Overview
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => window.print()}
                         className="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg border border-gray-300 transition-colors cursor-pointer"
                     >
                         Print Receipt
-                    </button>
+                    </button> */}
                 </div>
             </div>
         </div>

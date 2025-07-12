@@ -3,22 +3,18 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-    // Upload,
     FileText,
     FileSpreadsheet,
     X,
+    ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fadeInLeft } from "@/lib/animation";
 import { useFileUpload } from "../hooks/useFileUpload"
-import Image from "next/image";
 import { UploadStepProps } from "@/app/types";
-
 
 const UploadStep = ({
     onNext,
-    // currentStep,
-    // totalSteps,
 }: UploadStepProps) => {
     const [dragActive, setDragActive] = useState(false);
 
@@ -32,9 +28,9 @@ const UploadStep = ({
     const getFileIcon = (fileName: string) => {
         const ext = fileName?.split(".").pop()?.toLowerCase();
         return ext === "csv" || ext === "txt" ? (
-            <FileText className="w-8 h-8 text-sky-600" />
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
         ) : (
-            <FileSpreadsheet className="w-8 h-8 text-green-600" />
+            <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
         );
     };
 
@@ -74,129 +70,190 @@ const UploadStep = ({
         uploadedFiles.every((file) => uploadProgress[file.name] >= 100);
 
     return (
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-            {/* Header */}
-            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="text-center mb-12">
-                {/* <div className="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-                    <Upload className="w-4 h-4" />
-                    Step {currentStep} of {totalSteps}
-                </div> */}
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                    Upload Your <span className="text-sky-600">Sales Data</span>
-                </h2>
-                <p className="text-lg text-gray-600 font-medium max-w-2xl mx-auto">
-                    Upload your transaction files to begin VAT compliance. We support CSV, TXT, XLS, and XLSX formats.
-                </p>
-            </motion.div>
+        <div className="py-5 flex flex-col justify-center">
+            <div className="flex-1 flex items-center justify-center px-3 sm:px-4 md:px-6 lg:px-8">
+                <div className="w-full max-w-full lg:max-w-2xl mx-auto">
+                    <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
 
-            {/* Upload Area */}
-            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8 mb-8 max-w-4xl w-full mx-auto">
-                <div
-                    className={`relative border-2 border-dashed rounded-xl p-12 text-center ${dragActive ? "border-sky-500 bg-sky-50" : "border-gray-300 hover:border-sky-400 hover:bg-gray-50"}`}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                >
-                    <input
-                        type="file"
-                        multiple
-                        accept=".csv,.txt,.xls,.xlsx"
-                        onChange={handleFileInput}
-                        className="absolute inset-0 w-full md:h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-center mx-auto">
-                            <Image
-                                src="/icons/document.png"
-                                alt="document-icon"
-                                width={80}
-                                height={80}
-                                className="object-cover w-20 sm:w-24"
-                            />
+                        {/* Header */}
+                        {uploadedFiles.length === 0 && (
+                            <motion.div variants={fadeInLeft} className="text-center">
+                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Upload Your Files</h1>
+                                <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+                                    Drag and drop your files or click to browse. We support CSV, TXT, XLS, and XLSX formats.
+                                </p>
+                            </motion.div>
+                        )}
 
-                        </div>
-                        <div>
-                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                                Drag and drop your files here
-                            </h3>
-                            <p className="text-sm sm:text-base text-gray-600 mb-4">
-                                or click to browse from your computer
-                            </p>
-
-                            <Button className="bg-sky-600 hover:bg-sky-700 text-white">Choose Files</Button>
-                        </div>
-                        <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500">
-                            <span className="flex items-center gap-1"><FileText className="w-4 h-4" /> CSV, TXT</span>
-                            <span className="flex items-center gap-1"><FileSpreadsheet className="w-4 h-4" /> XLS, XLSX</span>
-                            <span className="font-medium text-sky-600">Max file size: 5MB</span>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Uploaded Files */}
-            {uploadedFiles.length > 0 && (
-                <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8 mb-8 max-w-4xl w-full mx-auto">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6">Uploaded Files</h3>
-                    <div className="space-y-4">
-                        {uploadedFiles.map((file, index) => {
-                            const progress = uploadProgress[file.name] || 0;
-                            const isComplete = progress >= 100;
-                            return (
-                                <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                    <div className="flex-shrink-0">{getFileIcon(file.name)}</div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-                                            <div className="flex items-center gap-2">
-                                                {isComplete ? (
-                                                    <Image
-                                                        src="/icons/check.svg"
-                                                        alt="Check"
-                                                        width={20}
-                                                        height={20}
-                                                    />
-                                                ) : (
-                                                    <span className="text-sm text-gray-500">
-                                                        {file.name ? `${Math.round(progress)}%` : "Loading..."}
-                                                    </span>
-                                                )}
-                                                {file.name && (
-                                                    <button
-                                                        onClick={() => removeFile(file.name)}
-                                                        className="text-gray-400 hover:text-red-500 cursor-pointer"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-
+                        {/* Upload Area */}
+                        <motion.div
+                            variants={fadeInLeft}
+                            initial="hidden"
+                            animate="show"
+                            className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-sm sm:shadow-md lg:shadow-lg border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6"
+                        >
+                            <div
+                                className={`relative border-2 border-dashed rounded-md sm:rounded-lg lg:rounded-xl text-center transition-all duration-300 ${dragActive
+                                    ? "border-sky-500 bg-sky-50"
+                                    : "border-gray-300 hover:border-sky-400 hover:bg-gray-50"
+                                    } 
+                                h-52 md:h-52 lg:h-40 xl:h-44
+                                p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8
+                                `}
+                                onDragEnter={handleDrag}
+                                onDragLeave={handleDrag}
+                                onDragOver={handleDrag}
+                                onDrop={handleDrop}
+                            >
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept=".csv,.txt,.xls,.xlsx"
+                                    onChange={handleFileInput}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <div className="h-full flex flex-col items-center justify-center space-y-1 sm:space-y-2 md:space-y-3">
+                                    <div className="flex items-center justify-center">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-sky-100 rounded-full flex items-center justify-center">
+                                            <svg
+                                                className="w-6 h-6  lg:w-7 lg:h-7 text-sky-600"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                                />
+                                            </svg>
                                         </div>
-                                        <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
-                                            <span>{formatFileSize(file.size)}</span>
-                                            <span>{isComplete ? "Upload complete" : "Uploading..."}</span>
-                                        </div>
-                                        {!isComplete && (
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div className="bg-sky-600 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
-                                            </div>
-                                        )}
+                                    </div>
+                                    <div className="text-center">
+                                        <h3 className="text-sm  md:text-base lg:text-lg font-semibold text-gray-900 mb-1">
+                                            Drag & drop files or{" "}
+                                            <span className="text-sky-600 cursor-pointer hover:underline">
+                                                Browse
+                                            </span>
+                                        </h3>
+                                        <p className="text-sm  md:text-sm text-gray-500">
+                                            Supported formats: CSV, TXT, XLS, XLSX
+                                        </p>
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                </motion.div>
-            )}
+                            </div>
+                        </motion.div>
 
-            {/* Navigation */}
-            <motion.div variants={fadeInLeft} initial="hidden" animate="show" className="flex sm:flex-row justify-between items-center gap-4 max-w-4xl w-full mx-auto">
-                <Button variant="outline" disabled className="text-gray-400 bg-transparent">Previous</Button>
-                <Button className="bg-sky-600 hover:bg-sky-700 text-white" disabled={!allFilesUploaded} onClick={onNext}>
-                    Continue
-                </Button>
-            </motion.div>
+                        {/* Upload Progress */}
+                        {uploadedFiles.length > 0 && uploadedFiles.some(file => uploadProgress[file.name] < 100) && (
+                            <motion.div
+                                variants={fadeInLeft}
+                                initial="hidden"
+                                animate="show"
+                                className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-sm sm:shadow-md lg:shadow-lg border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6"
+                            >
+                                <h3 className="text-sm md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+                                    Uploading - {uploadedFiles.filter(file => uploadProgress[file.name] < 100).length} files
+                                </h3>
+                                <div className="space-y-2 sm:space-y-3">
+                                    {uploadedFiles.filter(file => uploadProgress[file.name] < 100).map((file, index) => {
+                                        const progress = uploadProgress[file.name] || 0;
+                                        return (
+                                            <div key={index} className="space-y-1 sm:space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium text-gray-900 truncate pr-2 flex-1">
+                                                        {file.name}
+                                                    </span>
+                                                    <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
+                                                        {Math.round(progress)}%
+                                                    </span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
+                                                    <div
+                                                        className="bg-sky-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Uploaded Files */}
+                        {uploadedFiles.filter(file => uploadProgress[file.name] >= 100).length > 0 && (
+                            <motion.div
+                                variants={fadeInLeft}
+                                initial="hidden"
+                                animate="show"
+                                className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-sm sm:shadow-md lg:shadow-lg border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6"
+                            >
+                                <h3 className="text-sm md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+                                    Uploaded
+                                </h3>
+                                <div className="max-h-52 sm:max-h-52 lg:max-h-52 xl:max-h-72  overflow-y-auto space-y-2 pr-1 sm:pr-2">
+                                    {uploadedFiles
+                                        .filter(file => uploadProgress[file.name] >= 100)
+                                        .map((file, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-md sm:rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                                                    <div className="flex-shrink-0">
+                                                        {getFileIcon(file.name)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                                            {file.name}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {formatFileSize(file.size)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => removeFile(file.name)}
+                                                    className="flex-shrink-0 text-gray-400 hover:text-red-500 cursor-pointer p-1 hover:bg-red-50 rounded transition-colors ml-2"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                </div>
+
+                            </motion.div>
+                        )}
+
+
+                        {/* Navigation */}
+                        <motion.div
+                            variants={fadeInLeft}
+                            initial="hidden"
+                            animate="show"
+                            className="flex max-w-2xl justify-end items-stretch"
+                        >
+                            {/* <Button
+                                variant="outline"
+                                disabled
+                                className="w-full sm:w-auto sm:min-w-[120px] text-gray-400 bg-transparent text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5"
+                            >
+                                Previous
+                            </Button> */}
+                            <Button
+                                className="w-full flex items-center justify-center sm:w-auto sm:min-w-[120px] bg-sky-600 hover:bg-sky-700 text-white text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5"
+                                disabled={!allFilesUploaded}
+                                onClick={onNext}
+                            >
+                                Continue
+                                <ArrowRight className="w-5 h-5" />
+                            </Button>
+                        </motion.div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

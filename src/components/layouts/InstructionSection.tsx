@@ -28,7 +28,7 @@ const InstructionSection = () => {
                     Simplifying EU VAT Compliance, One Step at a Time
                 </h2>
                 <p className="text-gray-600 text-lg mt-6 max-w-2xl">
-                    TaxTrack helps businesses selling across the EU stay compliant with VAT laws—without the hassle.
+                    Qhuube helps businesses selling across the EU stay compliant with VAT laws—without the hassle.
                 </p>
             </motion.div>
 

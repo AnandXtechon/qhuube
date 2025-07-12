@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { ArrowRight, Check, Shield, Zap } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -18,27 +19,29 @@ const featureVariants = {
 }
 
 const PricingCard = () => {
-    const handleStripePayment = async () => {
-        try {
-            const response = await fetch("http://localhost:3000/pricing/stripe/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    amount: 20,
-                    description: "Tax Compliance File Processing",
-                }),
-            })
-            const data = await response.json()
-            if (data.checkoutUrl) {
-                window.location.href = data.checkoutUrl
-            } else {
-                alert(data.error || "Payment failed")
-            }
-        } catch (error) {
-            console.error(error)
-            alert("An unexpected error occurred")
-        }
-    }
+    // const handleStripePayment = async () => {
+    //     try {
+    //         const response = await fetch("http://localhost:3000/pricing/stripe/create", {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({
+    //                 amount: 20,
+    //                 description: "Tax Compliance File Processing",
+    //             }),
+    //         })
+    //         const data = await response.json()
+    //         if (data.checkoutUrl) {
+    //             window.location.href = data.checkoutUrl
+    //         } else {
+    //             alert(data.error || "Payment failed")
+    //         }
+    //     } catch (error) {
+    //         console.error(error)
+    //         alert("An unexpected error occurred")
+    //     }
+    // }
+
+    const router = useRouter()
 
     const features = [
         "Instant tax compliance checking",
@@ -99,7 +102,8 @@ const PricingCard = () => {
 
                     {/* CTA Button */}
                     <motion.button
-                        onClick={handleStripePayment}
+                        // onClick={handleStripePayment}
+                        onClick={() => router.push('/success')}
                         className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 sm:py-4 sm:px-6 rounded-xl transition-all duration-200 flex items-center justify-center group shadow-lg text-sm sm:text-base"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
