@@ -57,7 +57,7 @@ const Navbar = () => {
             </Link>
             <Button
               asChild
-              className="bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              className="bg-sky-600 hover:from-sky-700 hover:to-sky-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
               <Link href="/upload">Get Started</Link>
             </Button>
@@ -97,13 +97,13 @@ const Navbar = () => {
                   </div>
 
                   {/* Mobile Navigation Links */}
-                  <div className="flex-1 overflow-y-auto p-6">
+                  <div className="flex-1 overflow-y-auto px-2">
                     <div className="space-y-2">
                       {navItems.map((item, index) => (
                         <Link
                           href={item.href}
                           key={item.name}
-                          className="flex items-center rounded-xl px-4 py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-gray-100 hover:text-sky-600 hover:translate-x-1"
+                          className="flex items-center rounded-xl py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-gray-100 hover:text-sky-600 hover:translate-x-1"
                           onClick={handleLinkClick}
                           style={{
                             animationDelay: `${index * 50}ms`,
@@ -116,7 +116,7 @@ const Navbar = () => {
                       ))}
                       <Link
                         href="/contact"
-                        className="flex items-center rounded-xl px-4 py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-gray-100 hover:text-sky-600 hover:translate-x-1"
+                        className="flex items-center rounded-xl py-3 text-base font-medium text-gray-700 transition-all duration-200 hover:bg-gray-100 hover:text-sky-600 hover:translate-x-1"
                         onClick={handleLinkClick}
                         style={{
                           animationDelay: `${navItems.length * 50}ms`,
