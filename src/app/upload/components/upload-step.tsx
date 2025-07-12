@@ -72,7 +72,7 @@ const UploadStep = ({
     return (
         <div className="py-5 flex flex-col justify-center">
             <div className="flex-1 flex items-center justify-center px-3 sm:px-4 md:px-6 lg:px-8">
-                <div className="w-full max-w-full lg:max-w-2xl mx-auto">
+                <div className="w-full max-w-full lg:max-w-xl xl:max-w-2xl mx-auto">
                     <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
 
                         {/* Header */}
