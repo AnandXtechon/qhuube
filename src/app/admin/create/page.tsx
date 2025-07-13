@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-'use client'
+"use client"
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Eye, Save, ImageIcon, X, Calendar, User, Clock } from 'lucide-react';
 import RichTextEditor from '../components/RichTextEditor';
