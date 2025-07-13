@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
@@ -12,17 +12,29 @@ const Navbar = () => {
   const navItems = [
     { name: "Products", href: "/" },
     { name: "Pricing", href: "/pricing" },
-    // { name: "Blog", href: "/blog" },
+    { name: "Blog", href: "/blog" },
     { name: "About", href: "/about" },
   ]
 
   const handleLinkClick = () => {
     setIsOpen(false)
   }
+  const [scrolled, setScrolled] = useState(false)
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+  
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <nav
+      className={`fixed w-full z-50  bg-white transition-shadow duration-300 ${scrolled ? "shadow-sm" : ""
+        }`}
+    >
+      <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
@@ -51,7 +63,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Link
               href="/contact"
-              className="px-4 py-2 text-sm bg-gray-200 font-medium text-gray-900 transition-all duration-200 hover:text-sky-600 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-sm bg-gray-100 font-medium text-gray-900 transition-all duration-200 hover:text-sky-600 rounded-lg hover:bg-gray-50"
             >
               Contact
             </Link>

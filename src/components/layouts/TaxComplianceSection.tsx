@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 
 const TaxComplianceSection = () => {
     return (
-        <section className="bg-white py-20 px-4">
+        <section className="bg-white py-16 px-4">
             <div className="max-w-6xl mx-auto">
                 <div className="grid lg:grid-cols-2 gap-16 items-start">
                     {/* Left Column */}

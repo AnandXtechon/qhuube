@@ -111,7 +111,17 @@ export default async function BlogPost({ params }: Props) {
                 {/* Content */}
                 <div className="prose prose-lg max-w-none">
                     <div
-                        className="prose-headings:font-medium prose-headings:text-gray-900 prose-headings:leading-tight prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-strong:font-medium prose-strong:text-gray-900 prose-ul:my-6 prose-ol:my-6 prose-li:my-2 prose-blockquote:border-l-4 prose-blockquote:border-gray-200 prose-blockquote:pl-6 prose-blockquote:my-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm prose-code:font-mono"
+                        className="w-full min-h-96 p-6 focus:outline-none text-base leading-relaxed prose prose-lg max-w-none
+                                    prose-headings:font-medium prose-headings:text-gray-900 prose-headings:leading-tight
+                                    prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
+                                    prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                                    prose-strong:font-medium prose-strong:text-gray-900
+                                    prose-ul:my-6 prose-ol:my-6 prose-li:my-2
+                                    prose-blockquote:border-l-4 prose-blockquote:border-gray-200 prose-blockquote:pl-6 prose-blockquote:my-6 prose-blockquote:italic prose-blockquote:text-gray-600
+                                    prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm prose-code:font-mono
+                                    [&_h1]:text-3xl [&_h2]:text-2xl [&_h3]:text-xl
+                                    [&_hr]:my-8 [&_hr]:border-gray-200
+                                    [&_img]:w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6"
                         dangerouslySetInnerHTML={{ __html: post.content }}
                     />
                 </div>

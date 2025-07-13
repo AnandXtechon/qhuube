@@ -841,3 +841,66 @@ export const floatingVariants: Variants = {
         }
     }
 };
+
+export const floatingCard: Variants = {
+    float: {
+        y: [0, -10, 0],
+        transition: {
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+        },
+    },
+    pulse: {
+        scale: [1, 1.05, 1],
+        transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+        },
+    },
+};
+
+
+export const pulseAnimation: Variants = {
+    animate: {
+        scale: [1, 1.05, 1],
+        transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+        },
+    },
+};
+
+export const slideInLeft: Variants = {
+    hidden: {
+        x: -100,
+        opacity: 0,
+    },
+    show: {
+        x: 0,
+        opacity: 1,
+        transition: {
+            duration: 0.8,
+            ease: [0.6, -0.05, 0.01, 0.99],
+            delay: 0.8,
+        },
+    },
+};
+
+export const slideInRight: Variants = {
+    hidden: {
+        x: 100,
+        opacity: 0,
+    },
+    show: {
+        x: 0,
+        opacity: 1,
+        transition: {
+            duration: 0.8,
+            ease: [0.6, -0.05, 0.01, 0.99],
+            delay: 0.8,
+        },
+    },
+};
