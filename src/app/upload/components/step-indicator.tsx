@@ -1,6 +1,8 @@
 "use client"
 import { motion } from "framer-motion"
 import { Check } from "lucide-react"
+import Link from "next/link"
+// import Link from "next/link"
 
 interface Step {
     id: number
@@ -15,16 +17,26 @@ interface StepIndicatorProps {
 
 export default function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
     return (
-        <div className="fixed top-0 left-0 right-0 z-50  bg-white ">
+        <div className="fixed top-0 left-0 right-0 z-50  bg-white">
+             <div className="absolute top-5 left-5 lg:left-20">
+                <div className="flex items-center">
+                    <Link href="/" className="">
+                        <span className="text-2xl font-bold text-sky-600">Q</span>
+
+                        <span className="text-xl font-bold text-gray-900">HUUBE</span>
+                    </Link>
+                </div>
+
+            </div> 
             <div className="max-w-6xl mx-auto px-4 py-4">
                 {/* Steps */}
-                <div className="flex justify-center items-center gap-4 md:gap-2">
+                <div className="flex justify-center items-center gap-4 md:gap-2 mt-14 md:mt-14   xl:mt-4">
                     {steps.map((step, index) => (
                         <div key={step.id} className="flex items-center">
                             {/* Step Circle & Label */}
                             <div className="flex items-center">
                                 <motion.div
-                                    className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border-2 text-sm font-semibold transition-all duration-300
+                                    className={`flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 text-sm font-semibold transition-all duration-300
                       ${step.id < currentStep
                                             ? "bg-green-500 border-green-500 text-white"
                                             : step.id === currentStep

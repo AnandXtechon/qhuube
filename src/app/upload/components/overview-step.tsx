@@ -94,9 +94,9 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
     }
 
     return (
-        <div className="min-h-screenpy-4 sm:py-6 lg:py-8">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto">
+        <div className="min-h-screenpy-4 sm:py-6 lg:py-8 mt-16 xl:mt-4">
+            <div className=" mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-full mx-auto">
                     {/* Header */}
                     <div className="text-center mb-6 lg:mb-8">
                         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Processing Complete</h1>
@@ -273,13 +273,13 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
                         <Button
                             variant="outline"
                             onClick={onPrevious}
-                            className="w-full sm:w-auto h-10 sm:h-12 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 px-4 sm:px-6 order-2 sm:order-1"
+                            className="w-full sm:w-auto bg-white border-gray-300 py-2 cursor-pointer text-gray-700 hover:bg-gray-50 px-4 sm:px-6 order-2 sm:order-1"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Previous Step
                         </Button>
                         <Button
-                            className="bg-sky-600 hover:bg-sky-700 text-white h-10 sm:h-12 px-4 sm:px-6 w-full sm:w-auto order-1 sm:order-2"
+                            className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 cursor-pointer sm:px-6 w-full sm:w-auto order-1 sm:order-2"
                             onClick={handleStartNewProcess}
                         >
                             <RotateCcw className="w-4 h-4" />

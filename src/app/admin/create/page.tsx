@@ -118,7 +118,7 @@ export default function BlogPostEditor() {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
                 <div className="max-w-6xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -128,7 +128,7 @@ export default function BlogPostEditor() {
                             >
                                 <ArrowLeft className="w-5 h-5" />
                             </button>
-                            <div>
+                            <div className='hidden lg:block'>
                                 <h1 className="text-xl font-semibold text-gray-900">Create Article</h1>
                                 <p className="text-sm text-gray-500">Write and publish your story</p>
                             </div>
@@ -198,17 +198,18 @@ export default function BlogPostEditor() {
                                     </div>
 
                                     {/* Cover Image */}
-                                    <div className="border-t border-gray-100 pt-8">
-                                        <label className="block text-sm font-semibold text-gray-900 mb-4">
+                                    <div className="border-t border-gray-100 pt-8 flex flex-col items-center justify-center ">
+                                        <label className="block text-start text-sm font-semibold text-gray-900 mb-4">
                                             Cover Image
                                         </label>
-                                        <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-gray-300 transition-colors bg-gray-50">
+
+                                        <div className="relative border-2 w-fit h-fit flex border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 hover:border-gray-300 transition-colors">
                                             {coverPreview ? (
-                                                <div className="relative">
+                                                <div className="relative inline-block">
                                                     <img
                                                         src={coverPreview}
                                                         alt="Cover preview"
-                                                        className="w-full h-64 object-cover rounded-lg"
+                                                        className="w-full h-full object-cover rounded-lg"
                                                     />
                                                     <button
                                                         type="button"
@@ -216,18 +217,19 @@ export default function BlogPostEditor() {
                                                             setCover(null);
                                                             setCoverPreview('');
                                                         }}
-                                                        className="absolute top-3 right-3 p-2 bg-white shadow-lg rounded-full hover:bg-gray-50 transition-colors"
+                                                        className="absolute top-3 z-30 right-3 p-2 bg-white shadow-md rounded-full hover:bg-gray-100 transition-colors"
                                                     >
-                                                        <X className="w-4 h-4 text-gray-600" />
+                                                        <X className="w-4 h-4 text-gray-600 cursor-pointer" />
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <div>
-                                                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                                <div className="flex flex-col items-center">
+                                                    <ImageIcon className="w-12 h-12 text-gray-400 mb-4" />
                                                     <p className="text-gray-600 mb-2 font-medium">Upload a cover image</p>
-                                                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB. Recommended: 1200x630px</p>
+                                                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB. Recommended: 1200×630px</p>
                                                 </div>
                                             )}
+
                                             <input
                                                 type="file"
                                                 accept="image/*"
@@ -236,6 +238,7 @@ export default function BlogPostEditor() {
                                             />
                                         </div>
                                     </div>
+
 
                                     {/* Content Editor */}
                                     <div className="border-t border-gray-100 pt-8">

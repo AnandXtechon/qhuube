@@ -74,7 +74,7 @@ const PricingCard = () => {
                     {/* Pricing */}
                     <div className="text-center mb-6 sm:mb-8">
                         <div className="flex items-baseline justify-center mb-2">
-                            <span className="text-3xl sm:text-4xl font-bold text-gray-900">€20</span>
+                            <span className="text-3xl sm:text-4xl font-bold text-gray-900">€18.28</span>
                             <span className="text-gray-500 ml-2 text-sm">Pay per use</span>
                         </div>
                         <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-gray-600">

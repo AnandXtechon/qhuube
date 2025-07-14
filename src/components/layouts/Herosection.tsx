@@ -9,15 +9,16 @@ import { fadeInUp, staggerContainer, floatingCard } from "@/lib/animation"
 
 const HeroSectionDashboard = () => {
     return (
-        <section className="relative bg-white min-h-screen flex items-center overflow-hidden py-24 sm:py-16 lg:pt-20 xl:pb-0">
+        <section className="relative bg-white min-h-[70vh] md:min-h-screen flex items-center overflow-hidden py-12 sm:py-16 lg:pt-20 xl:pb-0">
+
             {/* Decorative Background Blurs */}
             <div className="absolute inset-0 pointer-events-none z-0">
-                <div className="absolute top-40 left-1/3 w-96 h-96 bg-blue-50/80 rounded-full blur-3xl animate-blob" />
+                {/* <div className="absolute top-40 left-1/3 w-96 h-96 bg-blue-50/80 rounded-full blur-3xl animate-blob" /> */}
                 <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
                 <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-purple-200/20 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000 hidden md:block"></div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-10 relative z-10 w-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12  relative z-10 w-full">
                 {/* Heading & CTA */}
                 <motion.div
                     variants={staggerContainer}
@@ -34,7 +35,7 @@ const HeroSectionDashboard = () => {
                     </motion.p> */}
 
                     <motion.div variants={fadeInUp} className="space-y-6">
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight max-w-3xl mx-auto">
+                        <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight max-w-2xl xl:max-w-3xl mx-auto lg:mt-20">
                             <span className="block text-gray-900">Effortless Europe VAT Compliance</span>
                             {/* <span className="block">Track, calculate & file across 27+ countries</span> */}
                         </h1>
@@ -59,10 +60,10 @@ const HeroSectionDashboard = () => {
                 </motion.div>
 
                 {/* Dashboard + Cards + Testimonials */}
-                <motion.div variants={floatingCard} initial="hidden" animate="float" className="relative max-w-6xl mx-auto mb-20">
+                <motion.div variants={floatingCard} initial="hidden" animate="float" className="relative max-w-6xl mx-auto lg:mb-20">
                     <div className="relative flex flex-col lg:flex-row items-center justify-center gap-8">
                         {/* Left Testimonial Card */}
-                        <div className="w-full max-w-xs lg:max-w-none lg:w-56 xl:w-64 order-2 lg:order-1">
+                        <div className="w-full max-w-xs lg:max-w-none lg:w-56 xl:w-64 order-2 hidden xl:block lg:order-1">
                             <div className="bg-white p-4 xl:p-6 rounded-2xl shadow-lg border border-gray-200 h-fit w-64 flex flex-col justify-between">
                                 <p className="text-xs xl:text-sm text-gray-800 leading-relaxed font-medium">
                                     {
@@ -121,7 +122,7 @@ const HeroSectionDashboard = () => {
                             >
                                 <div className="flex items-start gap-3">
                                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                        <span className="text-white text-xs font-bold">✓</span>
+                                        <Check className="text-white w-5 h-5"/>
                                     </div>
                                     <div>
                                         <div className="text-sm font-semibold text-gray-900">Tax Payable</div>
@@ -172,7 +173,7 @@ const HeroSectionDashboard = () => {
                         </div>
 
                         {/* Right Column (Stats Card & Testimonial) */}
-                        <div className="w-full max-w-xs lg:max-w-none lg:w-56 xl:w-64 space-y-8 order-3 lg:order-3">
+                        <div className="w-full max-w-xs lg:max-w-none lg:w-56 xl:w-64 space-y-8 order-3 hidden xl:block lg:order-3">
                             {/* Stats Card */}
                             <div className="bg-gray-900 p-4 xl:p-6 rounded-2xl shadow-lg border border-gray-700 h-44 xl:h-48 flex items-center justify-center text-center">
                                 <div className="text-white">

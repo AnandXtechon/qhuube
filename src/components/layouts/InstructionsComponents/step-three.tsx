@@ -100,7 +100,7 @@ const StepThree = () => {
                                         <CreditCard className="w-6 h-6 text-blue-600" />
                                     </div>
                                     <div>
-                                        <div className="text-xl sm:text-2xl font-bold text-blue-700">€20</div>
+                                        <div className="text-xl sm:text-2xl font-bold text-blue-700">€18.28</div>
                                         <div className="text-sm text-gray-600">Pay per use</div>
                                     </div>
                                 </motion.div>

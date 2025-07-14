@@ -8,6 +8,7 @@ import StepIndicator from "./step-indicator"
 import { useUploadStore } from "@/store/uploadStore"
 import PaymentStep from "./payment-step"
 import { useSearchParams, useRouter } from "next/navigation"
+import Footer from "./footer"
 
 const VATComplianceWizard = () => {
     const searchParams = useSearchParams()
@@ -59,7 +60,8 @@ const VATComplianceWizard = () => {
     const CurrentStepComponent = steps[currentStep - 1].component
 
     return (
-        <div className="min-h-screen">
+
+        <div className="min-h-screen flex flex-col justify-between">
             <StepIndicator steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
 
             <motion.div
@@ -81,7 +83,8 @@ const VATComplianceWizard = () => {
                     setCorrectedData={setCorrectedData}
                 />
             </motion.div>
-        </div>
+            <Footer/>
+            </div>
     )
 }
 

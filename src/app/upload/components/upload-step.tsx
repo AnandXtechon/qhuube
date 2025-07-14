@@ -7,16 +7,20 @@ import {
     FileSpreadsheet,
     X,
     ArrowRight,
+    ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fadeInLeft } from "@/lib/animation";
 import { useFileUpload } from "../hooks/useFileUpload"
 import { UploadStepProps } from "@/app/types";
+import { useRouter } from "next/navigation";
+
 
 const UploadStep = ({
     onNext,
 }: UploadStepProps) => {
     const [dragActive, setDragActive] = useState(false);
+    const router = useRouter()
 
     const {
         uploadedFiles,
@@ -70,7 +74,8 @@ const UploadStep = ({
         uploadedFiles.every((file) => uploadProgress[file.name] >= 100);
 
     return (
-        <div className="py-5 flex flex-col justify-center">
+        <>
+        <div className="py-5 flex flex-col justify-center mt-10">
             <div className="flex-1 flex items-center justify-center px-3 sm:px-4 md:px-6 lg:px-8">
                 <div className="w-full max-w-full lg:max-w-xl xl:max-w-2xl mx-auto">
                     <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
@@ -233,15 +238,17 @@ const UploadStep = ({
                             variants={fadeInLeft}
                             initial="hidden"
                             animate="show"
-                            className="flex max-w-2xl justify-end items-stretch"
+                            className="flex flex-row-reverse max-w-2xl justify-between items-stretch"
                         >
-                            {/* <Button
+                            <Button
                                 variant="outline"
-                                disabled
-                                className="w-full sm:w-auto sm:min-w-[120px] text-gray-400 bg-transparent text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5"
+                                onClick={() => router.push("/")}
+                                className="w-full sm:w-auto cursor-pointer bg-white border-gray-300 text-gray-700 hover:bg-gray-50 px-4 sm:px-6 order-2 sm:order-1"
                             >
-                                Previous
-                            </Button> */}
+                                <ArrowLeft className="w-4 h-4" />
+                                Back
+                            </Button>
+                            
                             <Button
                                 className="w-full flex items-center justify-center sm:w-auto sm:min-w-[120px] bg-sky-600 hover:bg-sky-700 text-white text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5"
                                 disabled={!allFilesUploaded}
@@ -254,7 +261,9 @@ const UploadStep = ({
                     </div>
                 </div>
             </div>
-        </div>
+            </div>
+        
+        </>
     );
 };
 

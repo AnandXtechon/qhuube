@@ -181,9 +181,9 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
     const allIssuesResolved = issues.every((issue) => issue.status !== "pending")
 
     return (
-        <div className="min-h-screen  py-4 sm:py-6 lg:py-8">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="max-w-5xl xl:max-w-6xl 2xl:max-w-7xl  mx-auto mt-16">
+        <div className="min-h-screen mt-12  lg:mt-16 py-4 sm:py-6 lg:py-8">
+            <div className=" mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-full mx-auto mt-16 xl:mt-4">
                     {/* Header */}
                     <div className="text-center mb-6 lg:mb-8">
                         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Tax Correction Review</h1>
@@ -404,7 +404,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                         <Button
                             variant="outline"
                             onClick={onPrevious}
-                            className="w-full sm:w-auto h-10 bg-transparent flex items-center justify-center px-6"
+                            className="w-full cursor-pointer sm:w-auto h-10 bg-transparent flex items-center justify-center px-6"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Previous
