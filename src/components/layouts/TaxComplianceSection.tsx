@@ -35,7 +35,7 @@ const TaxComplianceSection = () => {
                                 Built for modern European businesses
                             </h3>
                             <p className="text-lg text-gray-800 leading-relaxed font-medium mb-8">
-                                From navigating VAT thresholds to filing country-specific reports, TaxTrack helps you stay compliant without the headaches — no matter where you sell.
+                                From navigating VAT thresholds to filing country-specific reports, Qhuube helps you stay compliant without the headaches — no matter where you sell.
                             </p>
                         </div>
 

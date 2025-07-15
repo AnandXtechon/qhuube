@@ -9,7 +9,7 @@ import { fadeInUp, staggerContainer, floatingCard } from "@/lib/animation"
 
 const HeroSectionDashboard = () => {
     return (
-        <section className="relative bg-white min-h-[70vh] md:min-h-screen flex items-center overflow-hidden py-12 sm:py-16 lg:pt-20 xl:pb-0">
+        <section className="relative bg-white min-h-[70vh] md:min-h-screen flex items-center overflow-hidden py-20 lg:pt-20 xl:pb-0">
 
             {/* Decorative Background Blurs */}
             <div className="absolute inset-0 pointer-events-none z-0">
@@ -35,7 +35,7 @@ const HeroSectionDashboard = () => {
                     </motion.p> */}
 
                     <motion.div variants={fadeInUp} className="space-y-6">
-                        <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight max-w-2xl xl:max-w-3xl mx-auto lg:mt-20">
+                        <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight max-w-2xl xl:max-w-3xl mx-auto lg:mt-20">
                             <span className="block text-gray-900">Effortless Europe VAT Compliance</span>
                             {/* <span className="block">Track, calculate & file across 27+ countries</span> */}
                         </h1>

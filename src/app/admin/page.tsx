@@ -1,9 +1,24 @@
-import React from 'react'
+"use client"
 
-const page = () => {
+import { useAdminStore } from '@/store/userStore'
+import { useRouter } from 'next/navigation'
+import React, { useEffect } from 'react'
+
+const Admin = () => {
+  const router = useRouter()
+  const { admin } = useAdminStore()
+
+  useEffect(() => {
+    if (!admin?.token || !admin?.email) {
+      router.push('/admin-auth/login')
+    }
+  }, [admin, router])
+
   return (
-    <div>page</div>
+    <div>
+      <p>{admin?.email}</p>
+    </div>
   )
 }
 
-export default page
+export default Admin
