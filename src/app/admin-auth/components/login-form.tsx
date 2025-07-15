@@ -31,7 +31,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"div">) => {
         setError("")
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/auth/login", {
+            const response = await axios.post("https://qhuube.onrender.com/auth/login", {
                 email,
                 password
             })

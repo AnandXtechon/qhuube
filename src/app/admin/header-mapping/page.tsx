@@ -1,11 +1,9 @@
 "use client"
-import { useAdminStore } from '@/store/userStore'
 import HeaderManagement, { InternalHeader } from './components/internal-header-management'
 import { useState } from 'react'
 
 const Page  = () => {
-    const { admin } = useAdminStore()
-    console.log(admin?.token)
+
     const [internalHeaders, setInternalHeaders] = useState<InternalHeader[]>([
         {
             value: "customer_name",
