@@ -88,3 +88,20 @@ export interface PricingCardProps {
 }
 
 
+export interface TaxRule {
+    id?: string
+    _id?: string // Optional for edit operations
+    product_type: string
+    country: string
+    vat_rate: number
+    vat_category: string
+    shipping_vat_rate: number
+}
+
+export interface Filters {
+    search: string
+    country: string
+    vatCategory: string
+    vatRateMin: string
+    vatRateMax: string
+}

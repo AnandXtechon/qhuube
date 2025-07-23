@@ -22,13 +22,17 @@ const data = {
             url: "#",
             items: [
                 {
+                    title: "Users",
+                    url: "#",
+                },
+                {
                     title: "Header Mapping",
                     url: "/admin/header-mapping",
                 },
                 {
-                    title: "Users",
-                    url: "#",
-                },
+                    title: "Tax Settings",
+                    url: "/admin/tax-settings",
+                }
             ],
         },
 
