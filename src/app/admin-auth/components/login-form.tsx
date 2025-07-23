@@ -31,7 +31,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"div">) => {
         setError("")
 
         try {
-            const response = await axios.post(`${process.env.BACKEND_URL}/auth/login`, {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
                 email,
                 password
             })

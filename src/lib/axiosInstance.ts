@@ -2,8 +2,9 @@ import { useAdminStore } from "@/store/userStore"
 import axios from "axios"
 
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000/api/v1"
 const axiosInstance = axios.create({
-    baseURL: `${process.env.BACKEND_URL}/api/v1` || "http://localhost:8000/api/v1",
+    baseURL: `${backendUrl}/api/v1`,
 })
 
 // Add request interceptor to attach token from Zustand store
