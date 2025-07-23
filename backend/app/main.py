@@ -16,7 +16,7 @@ app.include_router(product.router, prefix="/api/v1", tags=["Product"])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://qhuube.vercel.app", "http://localhost:3000"],
+    allow_origins=["https://qhuube.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
