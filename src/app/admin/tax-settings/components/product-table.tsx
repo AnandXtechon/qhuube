@@ -19,6 +19,7 @@ import type { Filters, TaxRule } from "@/app/types"
 import axiosInstance from "@/lib/axiosInstance"
 import { fetchProducts } from "../services/fetch-products"
 import Spinner from "@/components/ui/spinner"
+import { ConfirmationPopover } from "./confirmation-popover"
 
 const ProductTable = () => {
     const [taxRules, setTaxRules] = useState<TaxRule[]>([])
@@ -43,7 +44,7 @@ const ProductTable = () => {
             }
         }
         load()
-    }, [])
+    }, [taxRules.length])
 
     const [showImportDialog, setShowImportDialog] = useState(false)
     const [editingRule, setEditingRule] = useState<TaxRule | null>(null)
@@ -143,7 +144,6 @@ const ProductTable = () => {
     const handleDelete = async (rule: TaxRule) => {
         // Get the ID to use for deletion
         const ruleId = rule._id || rule.id
-
         if (!ruleId) {
             toast.error("Rule ID is missing. Cannot delete rule.")
             return
@@ -151,7 +151,6 @@ const ProductTable = () => {
 
         try {
             await axiosInstance.delete(`/delete/product/${ruleId}`)
-
             setTaxRules((prev) => prev.filter((r) => r.id !== rule.id && r._id !== rule._id))
             toast.success(`Tax rule for ${rule.product_type} in ${rule.country} has been deleted.`)
         } catch (error: any) {
@@ -169,20 +168,20 @@ const ProductTable = () => {
         // After import, fetch latest products from backend and update table
         const fetchLatest = async () => {
             try {
-                const data = await fetchProducts();
+                const data = await fetchProducts()
                 const normalizedData = data.map((rule: any) => ({
                     ...rule,
                     id: rule.id || rule._id,
-                    _id: rule._id || rule.id,   
-                }));
-                setTaxRules(normalizedData);
-                toast.success("Imported tax rules and refreshed table.");
+                    _id: rule._id || rule.id,
+                }))
+                setTaxRules(normalizedData)
+                toast.success("Imported tax rules and refreshed table.")
             } catch (err: any) {
-                console.error("Failed to refresh tax rules after import", err);
-                toast.error("Failed to refresh tax rules after import.");
+                console.error("Failed to refresh tax rules after import", err)
+                toast.error("Failed to refresh tax rules after import.")
             }
-        };
-        fetchLatest();
+        }
+        fetchLatest()
     }
 
     const renderPaginationButtons = () => {
@@ -461,14 +460,15 @@ const ProductTable = () => {
                                             <Button size="sm" variant="outline" onClick={() => handleEdit(rule)}>
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50 bg-transparent"
-                                                onClick={() => handleDelete(rule)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <ConfirmationPopover rule={rule} onConfirm={() => handleDelete(rule)}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 bg-transparent"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </ConfirmationPopover>
                                         </div>
                                     </TableCell>
                                 </TableRow>

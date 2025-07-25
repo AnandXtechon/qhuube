@@ -56,7 +56,7 @@ const ConversionSection = () => {
 		},
 		{
 			id: 3,
-			title: "Made for Sellers & Accountants",
+			title: "Made for Sellers, BookKeepers & Accountants",
 			subtitle: "No integrations, just upload data",
 			icon: ShieldCheck,
 			color: "from-sky-500 to-sky-600",
@@ -166,10 +166,10 @@ function SectionCard({ section, index }: SectionCardProps) {
 						{/* Stats */}
 						<div className="flex items-center gap-4 pt-4">
 							<div className="text-center">
-								<div className={`text-3xl font-bold bg-gradient-to-r ${section.color} bg-clip-text text-transparent`}>
+								<div className={`text-xl font-bold bg-gradient-to-r ${section.color} bg-clip-text text-transparent`}>
 									{section.stats.value}
 								</div>
-								<div className="text-sm text-gray-600 font-medium">{section.stats.label}</div>
+								<div className="text-xs text-gray-600 font-medium">{section.stats.label}</div>
 							</div>
 							<div className="w-px h-8 bg-gray-200"></div>
 							<div className="text-sm text-gray-600">

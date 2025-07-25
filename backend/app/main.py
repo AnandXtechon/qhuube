@@ -15,7 +15,7 @@ app.include_router(validate_file.router, prefix="/api/v1", tags=["File Validatio
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

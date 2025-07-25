@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { EU_COUNTRIES, VAT_CATEGORIES } from "@/lib/countries"
 import { toast } from "sonner"
 import type { TaxRule } from "@/app/types"
@@ -21,6 +22,7 @@ interface AddRuleDialogProps {
 const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [useDifferentShippingRate, setUseDifferentShippingRate] = useState(false)
     const [newRule, setNewRule] = useState<Omit<TaxRule, "id">>({
         product_type: "",
         country: "",
@@ -28,6 +30,33 @@ const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
         vat_category: "",
         shipping_vat_rate: 0,
     })
+
+    const handleVatRateChange = (value: number) => {
+        setNewRule((prev) => ({
+            ...prev,
+            vat_rate: value,
+            // If not using different shipping rate, update shipping rate to match
+            shipping_vat_rate: useDifferentShippingRate ? prev.shipping_vat_rate : value,
+        }))
+    }
+
+    const handleShippingVatRateChange = (value: number) => {
+        setNewRule((prev) => ({
+            ...prev,
+            shipping_vat_rate: value,
+        }))
+    }
+
+    const handleUseDifferentShippingRateChange = (checked: boolean) => {
+        setUseDifferentShippingRate(checked)
+        if (!checked) {
+            // If unchecked, sync shipping VAT rate with VAT rate
+            setNewRule((prev) => ({
+                ...prev,
+                shipping_vat_rate: prev.vat_rate,
+            }))
+        }
+    }
 
     const handleAdd = async () => {
         if (newRule.product_type && newRule.country && newRule.vat_category) {
@@ -40,9 +69,7 @@ const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
                     vat_category: newRule.vat_category,
                     shipping_vat_rate: newRule.shipping_vat_rate,
                 })
-
                 onAddRule(response.data)
-
                 setNewRule({
                     product_type: "",
                     country: "",
@@ -50,6 +77,7 @@ const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
                     vat_category: "",
                     shipping_vat_rate: 0,
                 })
+                setUseDifferentShippingRate(false)
                 setOpen(false)
                 toast.success(`New tax rule for ${newRule.product_type} in ${newRule.country} has been added.`)
             } catch (error: any) {
@@ -70,6 +98,7 @@ const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
             vat_category: "",
             shipping_vat_rate: 0,
         })
+        setUseDifferentShippingRate(false)
         setOpen(false)
     }
 
@@ -83,12 +112,8 @@ const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
             </DialogTrigger>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        {/* <Plus className="h-5 w-5" /> */}
-                        Add New Tax Rule
-                    </DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">Add New Tax Rule</DialogTitle>
                 </DialogHeader>
-
                 <div className="space-y-4">
                     {/* Product Type */}
                     <div className="space-y-2">
@@ -130,8 +155,9 @@ const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
                             placeholder="0"
                             min="0"
                             max="100"
+                            step="1"
                             value={newRule.vat_rate}
-                            onChange={(e) => setNewRule((prev) => ({ ...prev, vat_rate: Number(e.target.value) }))}
+                            onChange={(e) => handleVatRateChange(Number(e.target.value))}
                         />
                     </div>
 
@@ -155,17 +181,37 @@ const AddRuleDialog = ({ onAddRule }: AddRuleDialogProps) => {
                         </Select>
                     </div>
 
+                    {/* Use Different Shipping Rate Checkbox */}
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="different-shipping-rate"
+                            checked={useDifferentShippingRate}
+                            onCheckedChange={handleUseDifferentShippingRateChange}
+                        />
+                        <Label htmlFor="different-shipping-rate" className="text-sm font-normal cursor-pointer">
+                            Use different shipping VAT rate
+                        </Label>
+                    </div>
+
                     {/* Shipping VAT Rate */}
                     <div className="space-y-2">
-                        <Label htmlFor="shipping-vat-rate">Shipping VAT Rate (%)</Label>
+                        <Label htmlFor="shipping-vat-rate">
+                            Shipping VAT Rate (%)
+                            {/* {!useDifferentShippingRate && (
+                                <span className="text-xs text-muted-foreground ml-1">(matches VAT rate)</span>
+                            )} */}
+                        </Label>
                         <Input
                             id="shipping-vat-rate"
                             type="number"
                             placeholder="0"
                             min="0"
                             max="100"
+                            step="1"
                             value={newRule.shipping_vat_rate}
-                            onChange={(e) => setNewRule((prev) => ({ ...prev, shipping_vat_rate: Number(e.target.value) }))}
+                            onChange={(e) => handleShippingVatRateChange(Number(e.target.value))}
+                            disabled={!useDifferentShippingRate}
+                            className={!useDifferentShippingRate ? "bg-muted" : ""}
                         />
                     </div>
 

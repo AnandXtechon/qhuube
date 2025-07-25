@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { AlertTriangle, CheckCircle, FileText, ArrowRight, ArrowLeft, Download, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -66,7 +66,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
     }
   }
 
-  const validationIssues = async () => {
+  const validationIssues = useCallback(async () => {
     if (uploadedFiles.length === 0) {
       console.log("No files to validate")
       return
@@ -151,7 +151,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
           // Handle data quality issues with detailed information
           validation_result.data_issues?.forEach((dataIssue: any) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const rowInfo =
               dataIssue.missing_rows?.length > 0
                 ? `Rows: ${dataIssue.missing_rows.join(", ")}${dataIssue.has_more_rows ? "..." : ""}`
@@ -220,11 +219,11 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [uploadedFiles])
 
   useEffect(() => {
     validationIssues()
-  }, [uploadedFiles])
+  }, [validationIssues])
 
   const handleCorrectIssue = (id: number) => {
     setIssues((prev) => prev.map((issue) => (issue.id === id ? { ...issue, status: "corrected" as const } : issue)))

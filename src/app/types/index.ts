@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 
 interface FileMeta {
     name: string;
     size: number;
     type: string;
+    file: File;
 }
 
 
@@ -33,14 +35,20 @@ export interface CorrectionStepProps {
     totalSteps: number
     uploadedFiles: FileMeta[]
     setUploadedFiles: (files: FileMeta[]) => void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     correctedData: any[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setCorrectedData: (data: any[]) => void
 }
 
 export interface TaxIssue {
-    details: any;
+    details?: {
+        columnName: string;
+        dataType: string;
+        missingRows: number[];
+        hasMoreRows: boolean;
+        totalMissing: number;
+        totalRows: number;
+        description: string;
+    } | undefined;
     id: number
     invoiceNumber: string
     invoiceDate: string
@@ -61,7 +69,6 @@ export interface OverviewStepProps {
     onPrevious: () => void
     currentStep: number
     totalSteps: number
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     correctedData: any[]
 }
 
