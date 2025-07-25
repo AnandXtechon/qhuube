@@ -165,8 +165,24 @@ const ProductTable = () => {
         setTaxRules((prev) => [...prev, { ...newRule, id }])
     }
 
-    const handleImportSuccess = (importedRules: TaxRule[]) => {
-        setTaxRules((prev) => [...prev, ...importedRules])
+    const handleImportSuccess = () => {
+        // After import, fetch latest products from backend and update table
+        const fetchLatest = async () => {
+            try {
+                const data = await fetchProducts();
+                const normalizedData = data.map((rule: any) => ({
+                    ...rule,
+                    id: rule.id || rule._id,
+                    _id: rule._id || rule.id,   
+                }));
+                setTaxRules(normalizedData);
+                toast.success("Imported tax rules and refreshed table.");
+            } catch (err: any) {
+                console.error("Failed to refresh tax rules after import", err);
+                toast.error("Failed to refresh tax rules after import.");
+            }
+        };
+        fetchLatest();
     }
 
     const renderPaginationButtons = () => {
@@ -261,7 +277,7 @@ const ProductTable = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center my-auto gap -2">
+            <div className="flex flex-col min-h-screen items-center justify-center my-auto gap-2">
                 <Spinner />
                 <span className="text-muted-foreground">Loading tax rules...</span>
             </div>

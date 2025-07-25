@@ -2,7 +2,7 @@ from app.core.database import db
 from bson import ObjectId
 
 async def get_all_products():
-    product_cursor = db.products.find({})
+    product_cursor = db.products.find({}).sort("created_at", -1)
     products = await product_cursor.to_list(length=None)
     # Convert ObjectId to string for each product
     for product in products:

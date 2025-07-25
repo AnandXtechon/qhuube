@@ -1,43 +1,79 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
-import HeaderManagement, { InternalHeader } from './components/internal-header-management'
-import { useState } from 'react'
+import axiosInstance from "@/lib/axiosInstance"
+import HeaderManagement, { type InternalHeader } from "./components/internal-header-management"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
-const Page  = () => {
+const Page = () => {
+    const [internalHeaders, setInternalHeaders] = useState<InternalHeader[]>([])
 
-    const [internalHeaders, setInternalHeaders] = useState<InternalHeader[]>([
-        {
-            value: "customer_name",
-            label: "Customer Name",
-            aliases: ["Client Name", "Account Holder", "Full Name"]
-        },
-        {
-            value: "email_address",
-            label: "Email Address",
-            aliases: ["Email", "Contact Email"]
-        },
-        {
-            value: "phone_number",
-            label: "Phone Number",
-            aliases: ["Phone", "Contact Number", "Mobile"]
+    // Fetch all headers from backend on mount
+    useEffect(() => {
+        const fetchHeaders = async () => {
+            try {
+                const response = await axiosInstance.get("/headers", { withCredentials: true })
+                console.log("Fetched headers:", response.data.headers)
+                setInternalHeaders(response.data.headers || [])
+            } catch (err) {
+                console.error("Failed to fetch headers:", err)
+                toast.error("Failed to fetch headers")
+            }
         }
-    ])
+        fetchHeaders()
+    }, [])
 
-    const handleAddHeader = (newHeader: InternalHeader) => {
-        setInternalHeaders(prev => [...prev, newHeader])
+    // Add header via API
+    const handleAddHeader = async (newHeader: InternalHeader) => {
+        try {
+            const response = await axiosInstance.post("/create/header", newHeader, {
+                withCredentials: true,
+            })
+            if (response.data) {
+                toast.success("Header added successfully.")
+                const added = response.data
+                setInternalHeaders((prev) => [...prev, added])
+            }
+        } catch (err: any) {
+            console.error("Failed to add header:", err)
+            const errorMessage = err.response?.data?.detail || "Failed to add header"
+            toast.error(errorMessage)
+        }
     }
 
-    const handleEditHeader = (oldValue: string, updatedHeader: InternalHeader) => {
-        setInternalHeaders(prev =>
-            prev.map(header =>
-                header.value === oldValue ? updatedHeader : header
-            )
-        )
+    // Edit header via API
+    const handleEditHeader = async (headerId: string, updatedHeader: InternalHeader) => {
+        try {
+            const response = await axiosInstance.put(`/update/header/${headerId}`, updatedHeader, {
+                withCredentials: true,
+            })
+            if (response.data.success) {
+                const edited = response.data.header
+                setInternalHeaders((prev) => prev.map((h) => (h._id === headerId ? edited : h)))
+                toast.success("Header updated successfully.")
+            }
+        } catch (err: any) {
+            console.error("Failed to edit header:", err)
+            const errorMessage = err.response?.data?.detail || "Failed to update header"
+            toast.error(errorMessage)
+        }
     }
 
-    const handleDeleteHeader = (valueToDelete: string) => {
-        setInternalHeaders(prev =>
-            prev.filter(header => header.value !== valueToDelete)
-        )
+    // Delete header via API
+    const handleDeleteHeader = async (headerId: string) => {
+        try {
+            const response = await axiosInstance.delete(`/delete/header/${headerId}`, {
+                withCredentials: true,
+            })
+            if (response.data.success) {
+                toast.success("Header deleted successfully.")
+                setInternalHeaders((prev) => prev.filter((h) => h._id !== headerId))
+            }
+        } catch (err: any) {
+            console.error("Failed to delete header:", err)
+            const errorMessage = err.response?.data?.detail || "Failed to delete header"
+            toast.error(errorMessage)
+        }
     }
 
     return (

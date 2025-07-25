@@ -36,8 +36,9 @@ class HeaderCreateSchema(BaseModel):
 
 
 class HeaderSchema(HeaderCreateSchema):
-    _id: str
-
+    id: PyObjectId = Field(..., alias="_id")
+    class Config:
+        populate_by_name = True
 
 class HeaderListResponse(BaseModel):
     success: bool

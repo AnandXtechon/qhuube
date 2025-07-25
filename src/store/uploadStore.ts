@@ -1,69 +1,63 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from "zustand"
 
 interface FileMeta {
-    name: string;
-    size: number;
-    type: string;
+    file: File // Store the actual File object
+    name: string
+    size: number
+    type: string
 }
 
 interface UploadState {
-    uploadedFiles: FileMeta[];
-    uploadProgress: Record<string, number>;
-    setUploadedFiles: (files: FileMeta[]) => void;
-    addUploadedFiles: (files: FileMeta[]) => void;
-    setUploadProgress: (progress: Record<string, number>) => void;
-    updateFileProgress: (fileName: string, progress: number) => void;
-    removeFile: (fileName: string) => void;
+    uploadedFiles: FileMeta[]
+    uploadProgress: Record<string, number>
+    setUploadedFiles: (files: FileMeta[]) => void
+    addUploadedFiles: (files: File[]) => void
+    setUploadProgress: (progress: Record<string, number>) => void
+    updateFileProgress: (fileName: string, progress: number) => void
+    removeFile: (fileName: string) => void
+    clearFiles: () => void
 }
 
-export const useUploadStore = create<UploadState>()(
-    persist(
-        (set, get) => ({
-            uploadedFiles: [],
-            uploadProgress: {},
+// Create store WITHOUT persistence to avoid File object serialization issues
+export const useUploadStore = create<UploadState>()((set, get) => ({
+    uploadedFiles: [],
+    uploadProgress: {},
 
-            setUploadedFiles: (files) => set({ uploadedFiles: files }),
+    setUploadedFiles: (files) => set({ uploadedFiles: files }),
 
-            addUploadedFiles: (files) => {
-                const existing = get().uploadedFiles;
-                const newMeta = files.map((f) => ({
-                    name: f.name,
-                    size: f.size,
-                    type: f.type,
-                }));
-                set({ uploadedFiles: [...existing, ...newMeta] });
+    addUploadedFiles: (files) => {
+        const existing = get().uploadedFiles
+        const newFileMeta = files.map((file) => ({
+            file, // Store the actual File object
+            name: file.name,
+            size: file.size,
+            type: file.type,
+        }))
+        set({ uploadedFiles: [...existing, ...newFileMeta] })
+    },
+
+    setUploadProgress: (progress) => set({ uploadProgress: progress }),
+
+    updateFileProgress: (fileName, progress) => {
+        set((state) => ({
+            uploadProgress: {
+                ...state.uploadProgress,
+                [fileName]: progress,
             },
+        }))
+    },
 
-            setUploadProgress: (progress) => set({ uploadProgress: progress }),
+    removeFile: (fileName) => {
+        set((state) => {
+            const updatedFiles = state.uploadedFiles.filter((f) => f.name !== fileName)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { [fileName]: _, ...updatedProgress } = state.uploadProgress
+            return {
+                uploadedFiles: updatedFiles,
+                uploadProgress: updatedProgress,
+            }
+        })
+    },
 
-            updateFileProgress: (fileName, progress) => {
-                set((state) => ({
-                    uploadProgress: {
-                        ...state.uploadProgress,
-                        [fileName]: progress,
-                    },
-                }));
-            },
-
-            removeFile: (fileName) => {
-                set((state) => {
-                    const updatedFiles = state.uploadedFiles.filter(
-                        (f) => f.name !== fileName
-                    );
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const { [fileName]: _, ...updatedProgress } = state.uploadProgress;
-                    return {
-                        uploadedFiles: updatedFiles,
-                        uploadProgress: updatedProgress,
-                    };
-                });
-            },
-        }),
-        {
-            name: "upload-storage",
-        }
-    )
-);
-  
-
+    clearFiles: () => set({ uploadedFiles: [], uploadProgress: {} }),
+}))

@@ -40,6 +40,7 @@ export interface CorrectionStepProps {
 }
 
 export interface TaxIssue {
+    details: any;
     id: number
     invoiceNumber: string
     invoiceDate: string

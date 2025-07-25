@@ -1,15 +1,22 @@
 "use client"
-
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Pencil, Plus, Trash2, Settings, Tag } from 'lucide-react'
-import { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Pencil, Plus, Trash2, Settings, Tag } from "lucide-react"
+import { useState } from "react"
 
 export interface InternalHeader {
+    _id?: string
     value: string
     label: string
     aliases?: string[]
@@ -18,11 +25,16 @@ export interface InternalHeader {
 interface InternalHeaderManagementProps {
     internalHeaders: InternalHeader[]
     onAddHeader: (newHeader: InternalHeader) => void
-    onEditHeader: (oldValue: string, updateHeader: InternalHeader) => void
-    onDeleteHeader: (valueDelete: string) => void
+    onEditHeader: (headerId: string, updateHeader: InternalHeader) => void
+    onDeleteHeader: (headerId: string) => Promise<void>
 }
 
-const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDeleteHeader }: InternalHeaderManagementProps) => {
+const HeaderManagement = ({
+    internalHeaders,
+    onAddHeader,
+    onEditHeader,
+    onDeleteHeader,
+}: InternalHeaderManagementProps) => {
     const [newHeaderLabel, setNewHeaderLabel] = useState("")
     const [newHeaderValue, setNewHeaderValue] = useState("")
     const [newHeaderAliases, setNewHeaderAliases] = useState("")
@@ -42,7 +54,7 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
             onAddHeader({
                 label: newHeaderLabel.trim(),
                 value: newHeaderValue.trim(),
-                aliases: aliasesArray.length > 0 ? aliasesArray : undefined
+                aliases: aliasesArray.length > 0 ? aliasesArray : undefined,
             })
             setNewHeaderLabel("")
             setNewHeaderValue("")
@@ -60,18 +72,24 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
     }
 
     const handleEditSave = () => {
-        if (editingHeader && editLabel.trim() && editValue.trim()) {
+        if (editingHeader && editingHeader._id && editLabel.trim() && editValue.trim()) {
             const aliasesArray = editAliases
                 .split(",")
                 .map((alias) => alias.trim())
                 .filter(Boolean)
-            onEditHeader(editingHeader.value, {
+            onEditHeader(editingHeader._id, {
                 label: editLabel.trim(),
                 value: editValue.trim(),
-                aliases: aliasesArray.length > 0 ? aliasesArray : undefined
+                aliases: aliasesArray.length > 0 ? aliasesArray : undefined,
             })
             setIsEditDialogOpen(false)
             setEditingHeader(null)
+        }
+    }
+
+    const handleDelete = async (header: InternalHeader) => {
+        if (header._id) {
+            await onDeleteHeader(header._id)
         }
     }
 
@@ -92,16 +110,11 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                             <p className="text-muted-foreground text-lg">Manage system fields available for data mapping</p>
                         </div>
                     </div>
-
-                    <Button
-                        onClick={() => setIsAddDialogOpen(true)}
-                        className=" px-6 hover:bg-sky-700"
-                    >
+                    <Button onClick={() => setIsAddDialogOpen(true)} className="px-6 hover:bg-sky-700">
                         <Plus className="h-4 w-4" />
                         Add Header
                     </Button>
                 </div>
-
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -117,11 +130,8 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                         <Tag className="w-5 h-5" />
                         Current Headers
                     </CardTitle>
-                    <CardDescription>
-                        Existing internal headers that can be mapped to external data sources
-                    </CardDescription>
+                    <CardDescription>Existing internal headers that can be mapped to external data sources</CardDescription>
                 </CardHeader>
-
                 <CardContent className="p-6">
                     {internalHeaders.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -130,13 +140,16 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                             </div>
                             <h3 className="text-lg font-semibold mb-2">No headers configured</h3>
                             <p className="text-muted-foreground mb-4 max-w-md">
-                                {`Get started by adding your first internal header. Click the "Add Header" button above to begin.`} 
+                                {'Get started by adding your first internal header. Click the "Add Header" button above to begin.'}
                             </p>
                         </div>
                     ) : (
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {internalHeaders.map((header) => (
-                                <Card key={header.value} className="group hover:shadow-md transition-all duration-200 border-border/50">
+                                <Card
+                                    key={header._id || header.value}
+                                    className="group hover:shadow-md transition-all duration-200 border-border/50"
+                                >
                                     <CardContent className="p-4">
                                         <div className="space-y-3">
                                             <div className="space-y-1">
@@ -145,7 +158,6 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                                                     {header.value}
                                                 </p>
                                             </div>
-
                                             {header.aliases && header.aliases.length > 0 && (
                                                 <div className="space-y-2">
                                                     <p className="text-xs font-medium text-muted-foreground">Aliases:</p>
@@ -158,21 +170,15 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                                                     </div>
                                                 </div>
                                             )}
-
                                             <div className="flex justify-end gap-2 pt-2 border-t">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => startEditing(header)}
-                                                    className="h-8 px-3"
-                                                >
+                                                <Button variant="outline" size="sm" onClick={() => startEditing(header)} className="h-8 px-3">
                                                     <Pencil className="w-3 h-3" />
                                                     <span className="sr-only">Edit {header.label}</span>
                                                 </Button>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => onDeleteHeader(header.value)}
+                                                    onClick={() => handleDelete(header)}
                                                     className="h-8 px-3 text-destructive hover:text-destructive hover:bg-destructive/10"
                                                 >
                                                     <Trash2 className="w-3 h-3" />
@@ -197,7 +203,6 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                             Create a new internal header field for data mapping.
                         </DialogDescription>
                     </DialogHeader>
-
                     <div className="space-y-6 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="new-header-label" className="text-sm font-medium">
@@ -210,11 +215,8 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                                 onChange={(e) => setNewHeaderLabel(e.target.value)}
                                 className="h-11"
                             />
-                            <p className="text-xs text-muted-foreground">
-                                Human-readable name shown in the interface
-                            </p>
+                            <p className="text-xs text-muted-foreground">Human-readable name shown in the interface</p>
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="new-header-value" className="text-sm font-medium">
                                 System Value
@@ -226,11 +228,8 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                                 onChange={(e) => setNewHeaderValue(e.target.value)}
                                 className="h-11 font-mono"
                             />
-                            <p className="text-xs text-muted-foreground">
-                                Technical identifier used internally
-                            </p>
+                            <p className="text-xs text-muted-foreground">Technical identifier used internally</p>
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="new-header-aliases" className="text-sm font-medium">
                                 Aliases <span className="text-muted-foreground font-normal">(optional)</span>
@@ -247,20 +246,11 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                             </p>
                         </div>
                     </div>
-
                     <DialogFooter className="gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsAddDialogOpen(false)}
-                            className="min-w-[100px]"
-                        >
+                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="min-w-[100px]">
                             Cancel
                         </Button>
-                        <Button
-                            onClick={handleAddHeader}
-                            disabled={!canAddHeader}
-                            className="min-w-[120px] hover:bg-sky-700"
-                        >
+                        <Button onClick={handleAddHeader} disabled={!canAddHeader} className="min-w-[120px] hover:bg-sky-700">
                             <Plus className="h-4 w-4" />
                             Add Header
                         </Button>
@@ -277,7 +267,6 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                             Update the header information. Changes will be applied immediately.
                         </DialogDescription>
                     </DialogHeader>
-
                     <div className="space-y-6 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit-label" className="text-sm font-medium">
@@ -290,7 +279,6 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                                 className="h-11"
                             />
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="edit-value" className="text-sm font-medium">
                                 System Value
@@ -302,7 +290,6 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                                 className="h-11 font-mono"
                             />
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="edit-aliases" className="text-sm font-medium">
                                 Aliases <span className="text-muted-foreground font-normal">(optional)</span>
@@ -316,20 +303,11 @@ const HeaderManagement = ({ internalHeaders, onAddHeader, onEditHeader, onDelete
                             />
                         </div>
                     </div>
-
                     <DialogFooter className="gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsEditDialogOpen(false)}
-                            className="min-w-[100px]"
-                        >
+                        <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="min-w-[100px]">
                             Cancel
                         </Button>
-                        <Button
-                            onClick={handleEditSave}
-                            disabled={!canSaveEdit}
-                            className="min-w-[120px] hover:bg-sky-700"
-                        >
+                        <Button onClick={handleEditSave} disabled={!canSaveEdit} className="min-w-[120px] hover:bg-sky-700">
                             Save Changes
                         </Button>
                     </DialogFooter>
