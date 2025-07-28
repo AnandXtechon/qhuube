@@ -12,7 +12,7 @@ const Page = () => {
     useEffect(() => {
         const fetchHeaders = async () => {
             try {
-                const response = await axiosInstance.get("/headers", { withCredentials: true })
+                const response = await axiosInstance.get("/headers")
                 console.log("Fetched headers:", response.data.headers)
                 setInternalHeaders(response.data.headers || [])
             } catch (err) {
@@ -26,9 +26,7 @@ const Page = () => {
     // Add header via API
     const handleAddHeader = async (newHeader: InternalHeader) => {
         try {
-            const response = await axiosInstance.post("/create/header", newHeader, {
-                withCredentials: true,
-            })
+            const response = await axiosInstance.post("/create/header", newHeader)
             if (response.data) {
                 toast.success("Header added successfully.")
                 const added = response.data
@@ -44,9 +42,7 @@ const Page = () => {
     // Edit header via API
     const handleEditHeader = async (headerId: string, updatedHeader: InternalHeader) => {
         try {
-            const response = await axiosInstance.put(`update/header/${headerId}`, updatedHeader, {
-                withCredentials: true,
-            })
+            const response = await axiosInstance.put(`update/header/${headerId}`, updatedHeader)
             if (response.data.success) {
                 const edited = response.data.header
                 setInternalHeaders((prev) => prev.map((h) => (h._id === headerId ? edited : h)))
