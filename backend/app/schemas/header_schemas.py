@@ -33,6 +33,7 @@ class HeaderCreateSchema(BaseModel):
     label: str
     value: str
     aliases: List[str] = Field(default_factory=list)
+    type: str
 
 
 class HeaderSchema(HeaderCreateSchema):

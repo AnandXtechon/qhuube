@@ -6,7 +6,7 @@ import OverviewStep from "./overview-step"
 import CorrectionStep from "./correction-step"
 import StepIndicator from "./step-indicator"
 import { useUploadStore } from "@/store/uploadStore"
-import PaymentStep from "./payment-step"
+// import PaymentStep from "./payment-step"
 import { useSearchParams, useRouter } from "next/navigation"
 import Footer from "./footer"
 
@@ -28,7 +28,7 @@ const VATComplianceWizard = () => {
     const steps = [
         { id: 1, name: "Upload", component: UploadStep },
         { id: 2, name: "Correction", component: CorrectionStep },
-        { id: 3, name: "Payment", component: PaymentStep },
+        // { id: 3, name: "Payment", component: PaymentStep },
         { id: 4, name: "Overview", component: OverviewStep },
     ]
 

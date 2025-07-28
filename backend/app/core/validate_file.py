@@ -1,12 +1,20 @@
 from io import BytesIO
+import io
 from typing import List
 import pandas as pd
 import numpy as np
 from fastapi import UploadFile, HTTPException, APIRouter, File
+from fastapi.responses import StreamingResponse
 from app.models.header_model import get_all_headers
 from app.models.product_model import get_all_products
+from app.core.helper import safe_float, safe_round, dataframe_to_json_safe, get_user_friendly_dtype, TYPE_MAP
+from openpyxl.styles import PatternFill
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl import Workbook
+import re
 
 router = APIRouter()
+
 
 # Read uploaded file and return headers + DataFrame
 async def extract_file_headers(file: UploadFile) -> tuple[list[str], pd.DataFrame]:
@@ -19,8 +27,10 @@ async def extract_file_headers(file: UploadFile) -> tuple[list[str], pd.DataFram
             df = pd.read_csv(file_data, delimiter='\t')
         else:
             df = pd.read_excel(file_data)
+
         headers = [str(col).strip().lower() for col in df.columns]
-        print(f"Extracted headers: {headers}")
+        
+        # print(f"Extracted headers: {headers}")
         return headers, df
     except Exception as e:
         raise HTTPException(
@@ -28,121 +38,6 @@ async def extract_file_headers(file: UploadFile) -> tuple[list[str], pd.DataFram
             detail=f"Error reading file: {str(e)}"
         )
 
-# Get data type in a user-friendly format
-def get_user_friendly_dtype(dtype):
-    dtype_str = str(dtype)
-    if 'int' in dtype_str:
-        return 'Number (Integer)'
-    elif 'float' in dtype_str:
-        return 'Number (Decimal)'
-    elif 'object' in dtype_str:
-        return 'Text'
-    elif 'datetime' in dtype_str:
-        return 'Date/Time'
-    elif 'bool' in dtype_str:
-        return 'True/False'
-    else:
-        return 'Unknown'
-
-# Safe conversion to float
-def safe_float(value, default=0.0):
-    try:
-        if pd.isna(value) or value == '' or value is None:
-            return default
-        return float(value)
-    except (ValueError, TypeError):
-        return default
-
-# Safe round function that handles NaN and infinity
-def safe_round(value, decimals=2):
-    try:
-        if pd.isna(value):
-            return 0.0
-        float_val = float(value)
-        if np.isinf(float_val):
-            return 0.0
-        return round(float_val, decimals)
-    except (ValueError, TypeError):
-        return 0.0
-
-# Check if a value is numeric and potentially problematic for JSON
-def is_problematic_numeric(value):
-    try:
-        if pd.isna(value):
-            return True
-        if isinstance(value, (int, float, np.integer, np.floating)):
-            float_val = float(value)
-            return np.isnan(float_val) or np.isinf(float_val)
-        return False
-    except (ValueError, TypeError):
-        return False
-
-# Convert DataFrame to JSON-safe format
-def dataframe_to_json_safe(df):
-    try:
-        # Create a copy to avoid modifying original
-        df_clean = df.copy()
-        
-        # Process each column based on its data type
-        for col in df_clean.columns:
-            col_dtype = df_clean[col].dtype
-            
-            if pd.api.types.is_numeric_dtype(col_dtype):
-                # Handle numeric columns
-                # Replace inf and -inf with 0
-                df_clean[col] = df_clean[col].replace([np.inf, -np.inf], 0)
-                # Fill NaN with 0
-                df_clean[col] = df_clean[col].fillna(0)
-            else:
-                # Handle non-numeric columns (text, dates, etc.)
-                # Fill NaN with empty string for object types
-                if col_dtype == 'object':
-                    df_clean[col] = df_clean[col].fillna('')
-                else:
-                    df_clean[col] = df_clean[col].fillna(0)
-        
-        # Convert to records
-        records = df_clean.to_dict(orient="records")
-        
-        # Final safety check - clean each record
-        clean_records = []
-        for record in records:
-            clean_record = {}
-            for key, value in record.items():
-                try:
-                    # Handle different value types
-                    if pd.isna(value):
-                        clean_record[key] = 0 if isinstance(value, (int, float, np.integer, np.floating)) else ""
-                    elif isinstance(value, (np.integer, np.floating)):
-                        # Convert numpy types to Python types
-                        float_val = float(value)
-                        if np.isnan(float_val) or np.isinf(float_val):
-                            clean_record[key] = 0
-                        else:
-                            clean_record[key] = float_val if isinstance(value, np.floating) else int(value)
-                    elif isinstance(value, (int, float)):
-                        # Handle Python numeric types
-                        if np.isnan(value) or np.isinf(value):
-                            clean_record[key] = 0
-                        else:
-                            clean_record[key] = value
-                    else:
-                        # Handle strings and other types
-                        clean_record[key] = str(value) if value is not None else ""
-                except (ValueError, TypeError, OverflowError):
-                    # If any conversion fails, use safe default
-                    clean_record[key] = ""
-            
-            clean_records.append(clean_record)
-        
-        return clean_records
-        
-    except Exception as e:
-        print(f"Error in dataframe_to_json_safe: {str(e)}")
-        # Fallback: return empty list if conversion fails completely
-        return []
-
-# Validate headers and check data quality
 async def validate_file_data(file_headers: list[str], df: pd.DataFrame) -> dict:
     try:
         # Get all headers from database
@@ -152,11 +47,26 @@ async def validate_file_data(file_headers: list[str], df: pd.DataFrame) -> dict:
         alias_map = {}
         required_headers = []
         header_labels = {}
+        expected_types = {}
+        validation_rules = {}  # New: store additional validation rules
         
         for header in all_headers:
             value = header['value'].lower()
             required_headers.append(value)
             header_labels[value] = header['label']
+            
+            # Get the raw type from database
+            raw_type = header.get('type', 'string')
+            print(f"Header: {value}, Raw type from DB: {raw_type}")
+            
+            # Map the type using TYPE_MAP
+            mapped_type = TYPE_MAP.get(raw_type.lower(), 'string')
+            expected_types[value] = mapped_type
+            
+            # Store additional validation rules if any
+            validation_rules[value] = header.get('validation_rules', {})
+            
+            print(f"Header: {value}, Mapped type: {mapped_type}")
             
             # Map the header value itself
             alias_map[value] = value
@@ -166,16 +76,20 @@ async def validate_file_data(file_headers: list[str], df: pd.DataFrame) -> dict:
             for alias in header.get('aliases', []):
                 alias_map[alias.lower()] = value
         
+        print("Header Labels", header_labels)
+        print("Expected Types", expected_types)
+        
         # Find matched and missing headers
         matched = set()
         matched_columns = {}
-        
         for file_col in file_headers:
             normalized = file_col.strip().lower()
             mapped_value = alias_map.get(normalized)
             if mapped_value in required_headers:
                 matched.add(mapped_value)
                 matched_columns[mapped_value] = file_col
+        
+        print("Matched columns:", matched_columns)
         
         # Create detailed missing headers info
         missing_headers_detailed = []
@@ -193,6 +107,8 @@ async def validate_file_data(file_headers: list[str], df: pd.DataFrame) -> dict:
         print(f"DataFrame columns: {df.columns.tolist()}")
         
         for header_value, original_col in matched_columns.items():
+            print(f"\nProcessing column: {header_value} -> {original_col}")
+            
             # Find the original column name in the dataframe
             original_col_name = None
             for col in df.columns:
@@ -200,58 +116,223 @@ async def validate_file_data(file_headers: list[str], df: pd.DataFrame) -> dict:
                     original_col_name = col
                     break
             
-            if original_col_name is not None:
-                # Get column data type
-                col_dtype = get_user_friendly_dtype(df[original_col_name].dtype)
+            if original_col_name is None:
+                print(f"Could not find column {original_col} in dataframe")
+                continue
                 
-                # Check for empty/null values safely
-                try:
-                    null_mask = df[original_col_name].isnull()
+            print(f"Found original column name: {original_col_name}")
+            
+            # Get column data type
+            col_dtype = get_user_friendly_dtype(df[original_col_name].dtype)
+            
+            # Check for empty/null values safely
+            try:
+                null_mask = df[original_col_name].isnull()
+                
+                # Only check for empty strings if it's an object column
+                if df[original_col_name].dtype == 'object':
+                    empty_mask = (df[original_col_name] == '') | (df[original_col_name] == ' ')
+                else:
+                    empty_mask = pd.Series([False] * len(df))
+                
+                combined_mask = null_mask | empty_mask
+                
+                null_count = int(null_mask.sum())
+                empty_count = int(empty_mask.sum())
+                total_empty = int(combined_mask.sum())
+                
+                if total_empty > 0:
+                    # Get specific row numbers with missing data (1-indexed for user display)
+                    missing_rows = df.index[combined_mask].tolist()
+                    missing_rows_display = [str(row + 2) for row in missing_rows[:10]]
                     
-                    # Only check for empty strings if it's an object column
-                    if df[original_col_name].dtype == 'object':
-                        empty_mask = (df[original_col_name] == '')
+                    # Create detailed issue description
+                    issue_description = f"Column '{header_labels.get(header_value, header_value)}' has {total_empty} missing values"
+                    if len(missing_rows) > 10:
+                        issue_description += f" (showing first 10 rows: {', '.join(missing_rows_display)}...)"
                     else:
-                        empty_mask = pd.Series([False] * len(df))
+                        issue_description += f" in rows: {', '.join(missing_rows_display)}"
                     
-                    combined_mask = null_mask | empty_mask
+                    data_issues.append({
+                        'header_value': header_value,
+                        'header_label': header_labels.get(header_value, header_value),
+                        'original_column': original_col_name,
+                        'issue_type': 'MISSING_DATA',
+                        'issue_description': issue_description,
+                        'column_name': header_labels.get(header_value, header_value),
+                        'data_type': col_dtype,
+                        'null_count': null_count,
+                        'empty_count': empty_count,
+                        'total_missing': total_empty,
+                        'total_rows': len(df),
+                        'percentage': round((total_empty / len(df)) * 100, 2),
+                        'missing_rows': missing_rows_display,
+                        'has_more_rows': len(missing_rows) > 10
+                    })
+            
+            except Exception as col_error:
+                print(f"Error processing missing data for column {original_col_name}: {str(col_error)}")
+            
+            # ------------------ Enhanced Data Type Validation ------------------
+            try:
+                invalid_type_rows = []
+                expected_type = expected_types.get(header_value, "string")
+                
+                print(f"Validating column '{original_col_name}' (header_value: '{header_value}') against expected type: {expected_type}")
+                
+                # Get sample of data for debugging
+                sample_data = df[original_col_name].dropna().head(5).tolist()
+                print(f"Sample data: {sample_data}")
+                
+                for idx, val in df[original_col_name].items():
+                    # Skip null/empty values as they're handled separately
+                    if pd.isnull(val) or (isinstance(val, str) and val.strip() == ''):
+                        continue
                     
-                    null_count = int(null_mask.sum())
-                    empty_count = int(empty_mask.sum())
-                    total_empty = int(combined_mask.sum())
+                    is_valid = True
+                    error_msg = ""
                     
-                    if total_empty > 0:
-                        # Get specific row numbers with missing data (1-indexed for user display)
-                        missing_rows = df.index[combined_mask].tolist()
-                        missing_rows_display = [str(row + 2) for row in missing_rows[:10]]  # +2 because index starts at 0 and we have header row
+                    try:
+                        if expected_type == 'integer':
+                            # Check if it's a boolean first
+                            if isinstance(val, bool):
+                                is_valid = False
+                                error_msg = "Boolean value found where integer expected"
+                            else:
+                                # Try to convert to int
+                                if isinstance(val, str):
+                                    # Remove whitespace and check if it's a valid integer string
+                                    clean_val = val.strip()
+                                    if not clean_val.replace('-', '').replace('+', '').isdigit():
+                                        is_valid = False
+                                        error_msg = f"Non-integer string: '{val}'"
+                                    else:
+                                        int(clean_val)
+                                else:
+                                    # For numeric types, check if it's a whole number
+                                    float_val = float(val)
+                                    if float_val != int(float_val):
+                                        is_valid = False
+                                        error_msg = f"Decimal value where integer expected: {val}"
+                                    else:
+                                        int(float_val)
+                                        
+                        elif expected_type == 'float':
+                            try:
+                                float(val)
+                            except (ValueError, TypeError):
+                                is_valid = False
+                                error_msg = f"Cannot convert to float: '{val}'"
+                                
+                        elif expected_type == 'date':
+                            # Try multiple date formats
+                            date_formats = ["%d-%m-%Y", "%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"]
+                            date_parsed = False
+                            
+                            for fmt in date_formats:
+                                try:
+                                    pd.to_datetime(str(val), format=fmt, errors='raise')
+                                    date_parsed = True
+                                    break
+                                except:
+                                    continue
+                            
+                            if not date_parsed:
+                                try:
+                                    pd.to_datetime(str(val), errors='raise')
+                                    date_parsed = True
+                                except:
+                                    is_valid = False
+                                    error_msg = f"Invalid date format: '{val}'"
+                                    
+                        elif expected_type == 'boolean':
+                            str_val = str(val).lower().strip()
+                            valid_bools = ['true', 'false', '1', '0', 'yes', 'no', 't', 'f', 'y', 'n']
+                            if str_val not in valid_bools:
+                                is_valid = False
+                                error_msg = f"Invalid boolean value: '{val}'"
+                                
                         
-                        # Create detailed issue description
-                        issue_description = f"Column '{header_labels.get(header_value, header_value)}' has {total_empty} missing values"
-                        if len(missing_rows) > 10:
-                            issue_description += f" (showing first 10 rows: {', '.join(missing_rows_display)}...)"
-                        else:
-                            issue_description += f" in rows: {', '.join(missing_rows_display)}"
+                        elif expected_type == 'text_only':
+                            # New validation: text that shouldn't contain only numbers
+                            str_val = str(val).strip()
+                            # Check if the value is purely numeric (including decimals)
+                            if re.match(r'^-?\d+\.?\d*$', str_val):
+                                is_valid = False
+                                error_msg = f"Numeric value found where text expected: '{val}'"
                         
-                        data_issues.append({
-                            'header_value': header_value,
-                            'header_label': header_labels.get(header_value, header_value),
-                            'original_column': original_col_name,
-                            'issue_type': 'MISSING_DATA',
-                            'issue_description': issue_description,
-                            'column_name': header_labels.get(header_value, header_value),
-                            'data_type': col_dtype,
-                            'null_count': null_count,
-                            'empty_count': empty_count,
-                            'total_missing': total_empty,
-                            'total_rows': len(df),
-                            'percentage': round((total_empty / len(df)) * 100, 2),
-                            'missing_rows': missing_rows_display,
-                            'has_more_rows': len(missing_rows) > 10
-                        })
-                        
-                except Exception as col_error:
-                    print(f"Error processing column {original_col_name}: {str(col_error)}")
-                    continue
+                        elif expected_type == 'categorical':
+                            # New validation: check against predefined categories
+                            allowed_categories = validation_rules.get(header_value, {}).get('allowed_values', [])
+                            if allowed_categories and str(val).strip() not in allowed_categories:
+                                is_valid = False
+                                error_msg = f"Invalid category '{val}'. Allowed values: {', '.join(allowed_categories)}"
+                                
+                        elif expected_type == 'string':
+                            # Enhanced string validation
+                            str_val = str(val).strip()
+                            
+                            # Check for business logic rules based on column name
+                            if header_value == 'product_type':
+                                # Special validation for product_type - shouldn't be purely numeric
+                                if re.match(r'^-?\d+\.?\d*$', str_val):
+                                    is_valid = False
+                                    error_msg = f"Product type should not be a number: '{val}'"
+                                # Could also check against known product types
+                                elif len(str_val) < 2:
+                                    is_valid = False
+                                    error_msg = f"Product type too short: '{val}'"
+                            
+                            elif header_value == 'country':
+                                # Country names shouldn't be numbers
+                                if re.match(r'^-?\d+\.?\d*$', str_val):
+                                    is_valid = False
+                                    error_msg = f"Country should not be a number: '{val}'"
+                            
+                            elif header_value == 'currency':
+                                # Currency codes should be 3 letters
+                                if not re.match(r'^[A-Z]{3}$', str_val.upper()):
+                                    is_valid = False
+                                    error_msg = f"Invalid currency code format: '{val}' (should be 3 letters like EUR, USD)"
+                            
+                            # General string validation - just ensure it can be converted to string
+                            try:
+                                str(val)
+                            except:
+                                is_valid = False
+                                error_msg = f"Cannot convert to string: '{val}'"
+                    
+                    except Exception as validation_error:
+                        is_valid = False
+                        error_msg = f"Validation error: {str(validation_error)}"
+                    
+                    if not is_valid:
+                        print(f"Type validation failed for value '{val}' at row {idx + 2}: {error_msg}")
+                        invalid_type_rows.append(idx + 2)  # +2 for 1-indexed + header row
+                
+                if invalid_type_rows:
+                    invalid_rows_display = invalid_type_rows[:10]
+                    issue_description = f"Column '{header_labels.get(header_value, header_value)}' has invalid {expected_type} values in rows: {', '.join(map(str, invalid_rows_display))}"
+                    if len(invalid_type_rows) > 10:
+                        issue_description += "..."
+                    
+                    data_issues.append({
+                        'header_value': header_value,
+                        'header_label': header_labels.get(header_value, header_value),
+                        'original_column': original_col_name,
+                        'issue_type': 'INVALID_TYPE',
+                        'issue_description': issue_description,
+                        'column_name': header_labels.get(header_value, header_value),
+                        'expected_type': expected_type,
+                        'invalid_rows': invalid_rows_display,
+                        'invalid_count': len(invalid_type_rows),
+                        'total_rows': len(df),
+                        'percentage': round((len(invalid_type_rows) / len(df)) * 100, 2),
+                        'has_more_rows': len(invalid_type_rows) > 10
+                    })
+                    
+            except Exception as type_error:
+                print(f"Error during type validation for column {original_col_name}: {str(type_error)}")
         
         return {
             'matched_headers': list(matched),
@@ -260,10 +341,12 @@ async def validate_file_data(file_headers: list[str], df: pd.DataFrame) -> dict:
             'matched_columns': matched_columns,
             'header_labels': header_labels,
             'data_issues': data_issues,
-            'total_rows': len(df)
+            'total_rows': len(df),
+            'expected_types': expected_types
         }
         
     except Exception as e:
+        print(f"Validation error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Validation error: {str(e)}"
@@ -271,19 +354,9 @@ async def validate_file_data(file_headers: list[str], df: pd.DataFrame) -> dict:
 
 async def enrich_dataframe_with_vat(df: pd.DataFrame) -> pd.DataFrame:
     try:
-        print("Starting VAT enrichment...")
-        print(f"DataFrame shape: {df.shape}")
-        print(f"DataFrame columns: {df.columns.tolist()}")
-        
         # Get VAT products from database
         vat_products = await get_all_products()
         print(f"Retrieved {len(vat_products)} VAT products from database")
-        
-        # Debug: Print first few VAT products
-        if vat_products:
-            print("Sample VAT products:")
-            for i, prod in enumerate(vat_products):
-                print(f"  Product {i+1}: {prod}")
         
         # Build lookup dictionary with better key handling
         vat_lookup = {}
@@ -296,6 +369,7 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> pd.DataFrame:
                     key = (product_type, country)
                     vat_lookup[key] = prod
                     print(f"Added VAT lookup: {key} -> VAT: {prod.get('vat_rate', 0)}%, Shipping VAT: {prod.get('shipping_vat_rate', 0)}%")
+                    # print("Vat Lookup", vat_lookup)
             except Exception as prod_error:
                 print(f"Error processing VAT product: {prod_error}")
                 continue
@@ -368,6 +442,7 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> pd.DataFrame:
                 # Look up VAT data
                 lookup_key = (product_type, country)
                 vat_data = vat_lookup.get(lookup_key)
+
                 
                 if vat_data:
                     # Extract VAT rates safely
@@ -422,25 +497,23 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> pd.DataFrame:
                 debug_info.append(f"Error: {str(row_error)}")
         
         # Add new columns to dataframe
-        df["vat_rate"] = vat_rates
-        df["vat_amount"] = vat_amounts
-        df["shipping_vat_rate"] = shipping_vat_rates
-        df["shipping_vat_amount"] = shipping_vat_amounts
-        df["net_amount"] = net_amounts
-        df["vat_lookup_status"] = vat_lookup_status
-        df["vat_debug_info"] = debug_info
+        df["VAT Rate"] = vat_rates
+        df["VAT Amount"] = vat_amounts
+        df["Shipping VAT Rate"] = shipping_vat_rates
+        df["Shipping VAT Amount"] = shipping_vat_amounts
+        df["Net Amount"] = net_amounts
+        # df["vat_lookup_status"] = vat_lookup_status
+        # df["vat_debug_info"] = debug_info
         
-        # Summary statistics
-        found_count = sum(1 for status in vat_lookup_status if status == "Found")
-        not_found_count = sum(1 for status in vat_lookup_status if status == "Not Found")
-        error_count = sum(1 for status in vat_lookup_status if status == "Error")
-        
-        print(f"VAT enrichment completed:")
-        print(f"  - Found VAT data: {found_count} rows")
-        print(f"  - No VAT data: {not_found_count} rows")
-        print(f"  - Errors: {error_count} rows")
-        print(f"  - Total VAT amount calculated: {sum(vat_amounts)}")
-        print(f"DataFrame shape after enrichment: {df.shape}")
+
+
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', None)
+
+        print("DataFrame table (full view):")
+       
+        print(df)
         
         return df
         
@@ -470,10 +543,6 @@ async def validate_file(files: List[UploadFile] = File(...)):
             
             # Extract headers and data from file
             headers, df = await extract_file_headers(file)
-            print(f"Extracted {len(headers)} headers and {len(df)} rows")
-            print(f"DataFrame dtypes: {df.dtypes.to_dict()}")
-            print(f"First few rows of data:")
-            print(df.head().to_string())
             
             if not headers:
                 results.append({
@@ -516,6 +585,7 @@ async def validate_file(files: List[UploadFile] = File(...)):
                 try:
                     original_data = dataframe_to_json_safe(df)
                     validation_result["enriched_data"] = original_data
+                    
                 except Exception as json_error:
                     print(f"JSON conversion also failed: {str(json_error)}")
                     validation_result["enriched_data"] = []
@@ -542,5 +612,185 @@ async def validate_file(files: List[UploadFile] = File(...)):
                 "success": False,
                 "message": f"Error validating file: {str(e)}"
             })
-    
+
     return {"files": results}
+
+
+@router.post("/download-vat-report")
+async def download_vat_report(file: UploadFile = File(...)):
+    try:
+        # Read headers and the DataFrame
+        headers, df = await extract_file_headers(file)
+
+        # Enrich DataFrame with VAT
+        enriched_df = await enrich_dataframe_with_vat(df)
+
+        # Format date columns before writing to Excel
+        for col in enriched_df.columns:
+            if "date" in col.lower():
+                enriched_df[col] = pd.to_datetime(enriched_df[col], errors="coerce").dt.strftime("%d-%m-%Y")
+
+        # Write to Excel
+        excel_stream = io.BytesIO()
+        enriched_df.to_excel(excel_stream, index=False)
+        excel_stream.seek(0)
+
+        # Set proper download name
+        download_name = file.filename.rsplit('.', 1)[0] + "_vat_report.xlsx"
+
+        return StreamingResponse(
+            excel_stream,
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={
+                "Content-Disposition": f"attachment; filename={download_name}"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not generate download: {str(e)}")
+
+@router.post("/download-vat-issues")
+async def download_vat_issues(file: UploadFile = File(...)):
+    try:
+        headers, df = await extract_file_headers(file)
+        validation_result = await validate_file_data(headers, df)
+
+        for col in df.columns:
+            if "date" in col.lower():
+                df[col] = pd.to_datetime(df[col], errors="coerce").dt.strftime("%d-%m-%Y")
+
+        issues = validation_result.get("data_issues", [])
+        missing_headers = validation_result.get("missing_headers_detailed", [])
+        header_labels = validation_result.get("header_labels", {})
+
+        # Insert placeholder columns for missing headers
+        missing_labels = [mh["header_label"] for mh in missing_headers]
+        for label in missing_labels:
+            if label not in df.columns:
+                df[label] = ""
+
+        # Build issues sheet
+        issues_rows = []
+        for mh in missing_headers:
+            issues_rows.append({
+                "Issue Type": "Missing Header",
+                "Column": mh["header_label"],
+                "Description": mh["description"]
+            })
+        for issue in issues:
+            issues_rows.append({
+                "Issue Type": issue["issue_type"],
+                "Column": issue["column_name"],
+                "Description": issue["issue_description"],
+                "Missing Count": issue.get("total_missing", ""),
+                "Missing %": issue.get("percentage", "")
+            })
+        issues_df = pd.DataFrame(issues_rows or [{
+            "Issue Type": "None",
+            "Column": "All",
+            "Description": "No missing headers or data issues found."
+        }])
+
+        # --- Create Excel workbook ---
+        wb = Workbook()
+        ws_data = wb.active
+        ws_data.title = "User Data"
+
+        from openpyxl.styles import PatternFill, Font, Border, Side, Alignment
+        from openpyxl.utils import get_column_letter
+        from openpyxl.utils.dataframe import dataframe_to_rows
+
+        # Fills
+        red_fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")    # Header or invalid type
+        orange_fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")  # Missing values
+        header_fill = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")  # Normal header
+        bold_font = Font(bold=True)
+        thin_border = Border(
+            left=Side(style="thin"), right=Side(style="thin"),
+            top=Side(style="thin"), bottom=Side(style="thin")
+        )
+
+        # --- Write data ---
+        for r in dataframe_to_rows(df, index=False, header=True):
+            ws_data.append(r)
+
+        col_name_to_index = {col: idx for idx, col in enumerate(df.columns)}
+
+        # --- Highlight headers ---
+        for col_idx, col in enumerate(df.columns, start=1):
+            cell = ws_data.cell(row=1, column=col_idx)
+            cell.font = bold_font
+            cell.border = thin_border
+            cell.alignment = Alignment(horizontal="center")
+            cell.fill = red_fill if col in missing_labels else header_fill
+
+        # --- Highlight issues ---
+        for issue in issues:
+            col_name = issue.get("original_column")
+            if not col_name or col_name not in col_name_to_index:
+                continue
+
+            col_idx = col_name_to_index[col_name] + 1
+
+            # Highlight missing values
+            if issue["issue_type"] == "MISSING_DATA":
+                for row_str in issue["missing_rows"]:
+                    try:
+                        row_num = int(row_str)
+                        ws_data.cell(row=row_num, column=col_idx).fill = orange_fill
+                    except Exception:
+                        continue
+
+            # Highlight invalid types
+            if issue["issue_type"] == "INVALID_TYPE":
+                for row_num in issue["invalid_rows"]:
+                    try:
+                        ws_data.cell(row=row_num, column=col_idx).fill = red_fill
+                    except Exception:
+                        continue
+
+        # --- Style data cells + autosize ---
+        for row in ws_data.iter_rows(min_row=2):
+            for cell in row:
+                cell.border = thin_border
+                cell.alignment = Alignment(vertical="center")
+
+        for col in ws_data.columns:
+            max_len = max((len(str(cell.value)) for cell in col if cell.value), default=10)
+            col_letter = get_column_letter(col[0].column)
+            ws_data.column_dimensions[col_letter].width = max_len + 2
+
+        # --- Add issues sheet ---
+        ws_issues = wb.create_sheet("Validation Issues")
+        for r in dataframe_to_rows(issues_df, index=False, header=True):
+            ws_issues.append(r)
+
+        for col in ws_issues.iter_cols(min_row=1, max_row=1):
+            for cell in col:
+                cell.fill = header_fill
+                cell.font = bold_font
+                cell.border = thin_border
+
+        for row in ws_issues.iter_rows(min_row=2):
+            for cell in row:
+                cell.border = thin_border
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
+
+        for col in ws_issues.columns:
+            max_len = max((len(str(cell.value)) for cell in col if cell.value), default=10)
+            col_letter = get_column_letter(col[0].column)
+            ws_issues.column_dimensions[col_letter].width = max_len + 2
+
+        # --- Output stream ---
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        download_name = file.filename.rsplit('.', 1)[0] + "_validation_annotated.xlsx"
+        return StreamingResponse(
+            output,
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={"Content-Disposition": f"attachment; filename={download_name}"}
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not generate issue report: {str(e)}")

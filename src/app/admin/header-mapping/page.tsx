@@ -44,7 +44,7 @@ const Page = () => {
     // Edit header via API
     const handleEditHeader = async (headerId: string, updatedHeader: InternalHeader) => {
         try {
-            const response = await axiosInstance.put(`/update/header/${headerId}`, updatedHeader, {
+            const response = await axiosInstance.put(`update/header/${headerId}`, updatedHeader, {
                 withCredentials: true,
             })
             if (response.data.success) {

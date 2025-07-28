@@ -96,7 +96,7 @@ const ConversionSection = () => {
 							<span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-sky-600">
 								finance platform
 							</span>{" "}
-							for growing businesses
+							for global businesses
 						</h1>
 						<p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
 							Streamline your financial operations with powerful tools designed for efficiency and growth
@@ -219,11 +219,11 @@ function SectionCard({ section, index }: SectionCardProps) {
 											</div>
 											<div
 												className={`w-3 h-3 rounded-full ${section.overlayContent.status === "paid" ||
-														section.overlayContent.status === "success"
-														? "bg-green-500"
-														: section.overlayContent.status === "trending"
-															? "bg-sky-500 animate-pulse"
-															: "bg-gray-400"
+													section.overlayContent.status === "success"
+													? "bg-green-500"
+													: section.overlayContent.status === "trending"
+														? "bg-sky-500 animate-pulse"
+														: "bg-gray-400"
 													}`}
 											></div>
 										</div>

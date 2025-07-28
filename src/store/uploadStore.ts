@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from "zustand"
 
 interface FileMeta {
@@ -50,7 +51,6 @@ export const useUploadStore = create<UploadState>()((set, get) => ({
     removeFile: (fileName) => {
         set((state) => {
             const updatedFiles = state.uploadedFiles.filter((f) => f.name !== fileName)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { [fileName]: _, ...updatedProgress } = state.uploadProgress
             return {
                 uploadedFiles: updatedFiles,

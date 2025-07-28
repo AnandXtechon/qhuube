@@ -15,7 +15,8 @@ async def create_new_header(header: HeaderCreateSchema, admin=Depends(verify_acc
         created_header = await create_header(
             header.label,
             header.value,
-            header.aliases or []
+            header.aliases or [],
+            header.type
         )
         return created_header
     except HTTPException:
@@ -41,7 +42,9 @@ async def update_header_in_db(header_id: str, updated: HeaderCreateSchema, admin
             header_id,
             updated.label,
             updated.value,
-            updated.aliases or []
+            updated.aliases or [],
+            updated.type
+
         )
         return {
             "success": True,

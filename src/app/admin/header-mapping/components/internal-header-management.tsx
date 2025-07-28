@@ -1,4 +1,5 @@
 "use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -12,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Pencil, Plus, Trash2, Settings, Tag } from "lucide-react"
 import { useState } from "react"
 
@@ -20,6 +22,7 @@ export interface InternalHeader {
     value: string
     label: string
     aliases?: string[]
+    type: string
 }
 
 interface InternalHeaderManagementProps {
@@ -27,6 +30,33 @@ interface InternalHeaderManagementProps {
     onAddHeader: (newHeader: InternalHeader) => void
     onEditHeader: (headerId: string, updateHeader: InternalHeader) => void
     onDeleteHeader: (headerId: string) => Promise<void>
+}
+
+const HEADER_TYPES = [
+    { value: "string", label: "String" },
+    { value: "number", label: "Number" },
+    { value: "date", label: "Date" },
+    { value: "boolean", label: "Boolean" },
+    { value: "email", label: "Email" },
+    { value: "phone", label: "Phone" },
+    { value: "url", label: "URL" },
+    { value: "text", label: "Text" },
+    { value: "json", label: "JSON" },
+]
+
+const getTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
+        string: "bg-blue-100 text-blue-800",
+        number: "bg-green-100 text-green-800",
+        date: "bg-purple-100 text-purple-800",
+        boolean: "bg-orange-100 text-orange-800",
+        email: "bg-pink-100 text-pink-800",
+        phone: "bg-indigo-100 text-indigo-800",
+        url: "bg-cyan-100 text-cyan-800",
+        text: "bg-gray-100 text-gray-800",
+        json: "bg-yellow-100 text-yellow-800",
+    }
+    return colors[type] || "bg-gray-100 text-gray-800"
 }
 
 const HeaderManagement = ({
@@ -38,15 +68,17 @@ const HeaderManagement = ({
     const [newHeaderLabel, setNewHeaderLabel] = useState("")
     const [newHeaderValue, setNewHeaderValue] = useState("")
     const [newHeaderAliases, setNewHeaderAliases] = useState("")
+    const [newHeaderType, setNewHeaderType] = useState("")
     const [editingHeader, setEditingHeader] = useState<InternalHeader | null>(null)
     const [editLabel, setEditLabel] = useState("")
     const [editValue, setEditValue] = useState("")
     const [editAliases, setEditAliases] = useState("")
+    const [editType, setEditType] = useState("")
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
     const handleAddHeader = () => {
-        if (newHeaderLabel.trim() && newHeaderValue.trim()) {
+        if (newHeaderLabel.trim() && newHeaderValue.trim() && newHeaderType) {
             const aliasesArray = newHeaderAliases
                 .split(",")
                 .map((alias) => alias.trim())
@@ -55,10 +87,12 @@ const HeaderManagement = ({
                 label: newHeaderLabel.trim(),
                 value: newHeaderValue.trim(),
                 aliases: aliasesArray.length > 0 ? aliasesArray : undefined,
+                type: newHeaderType,
             })
             setNewHeaderLabel("")
             setNewHeaderValue("")
             setNewHeaderAliases("")
+            setNewHeaderType("")
             setIsAddDialogOpen(false)
         }
     }
@@ -68,11 +102,12 @@ const HeaderManagement = ({
         setEditLabel(header.label)
         setEditValue(header.value)
         setEditAliases(header.aliases ? header.aliases.join(", ") : "")
+        setEditType(header.type)
         setIsEditDialogOpen(true)
     }
 
     const handleEditSave = () => {
-        if (editingHeader && editingHeader._id && editLabel.trim() && editValue.trim()) {
+        if (editingHeader && editingHeader._id && editLabel.trim() && editValue.trim() && editType) {
             const aliasesArray = editAliases
                 .split(",")
                 .map((alias) => alias.trim())
@@ -81,6 +116,7 @@ const HeaderManagement = ({
                 label: editLabel.trim(),
                 value: editValue.trim(),
                 aliases: aliasesArray.length > 0 ? aliasesArray : undefined,
+                type: editType,
             })
             setIsEditDialogOpen(false)
             setEditingHeader(null)
@@ -93,8 +129,8 @@ const HeaderManagement = ({
         }
     }
 
-    const canAddHeader = newHeaderLabel.trim() && newHeaderValue.trim()
-    const canSaveEdit = editLabel.trim() && editValue.trim()
+    const canAddHeader = newHeaderLabel.trim() && newHeaderValue.trim() && newHeaderType
+    const canSaveEdit = editLabel.trim() && editValue.trim() && editType
 
     return (
         <div className="w-full mx-auto space-y-8">
@@ -153,7 +189,10 @@ const HeaderManagement = ({
                                     <CardContent className="p-4">
                                         <div className="space-y-3">
                                             <div className="space-y-1">
-                                                <h4 className="font-semibold text-sm leading-tight">{header.label}</h4>
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="font-semibold text-sm leading-tight">{header.label}</h4>
+                                                    <Badge className={`text-xs ${getTypeColor(header.type)}`}>{header.type}</Badge>
+                                                </div>
                                                 <p className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
                                                     {header.value}
                                                 </p>
@@ -231,6 +270,24 @@ const HeaderManagement = ({
                             <p className="text-xs text-muted-foreground">Technical identifier used internally</p>
                         </div>
                         <div className="space-y-2">
+                            <Label htmlFor="new-header-type" className="text-sm font-medium">
+                                Data Type
+                            </Label>
+                            <Select value={newHeaderType} onValueChange={setNewHeaderType}>
+                                <SelectTrigger className="h-11">
+                                    <SelectValue placeholder="Select data type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {HEADER_TYPES.map((type) => (
+                                        <SelectItem key={type.value} value={type.value}>
+                                            {type.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">Choose the data type that best represents this field</p>
+                        </div>
+                        <div className="space-y-2">
                             <Label htmlFor="new-header-aliases" className="text-sm font-medium">
                                 Aliases <span className="text-muted-foreground font-normal">(optional)</span>
                             </Label>
@@ -289,6 +346,23 @@ const HeaderManagement = ({
                                 onChange={(e) => setEditValue(e.target.value)}
                                 className="h-11 font-mono"
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-type" className="text-sm font-medium">
+                                Data Type
+                            </Label>
+                            <Select value={editType} onValueChange={setEditType}>
+                                <SelectTrigger className="h-11">
+                                    <SelectValue placeholder="Select data type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {HEADER_TYPES.map((type) => (
+                                        <SelectItem key={type.value} value={type.value}>
+                                            {type.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="edit-aliases" className="text-sm font-medium">

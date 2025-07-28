@@ -62,6 +62,34 @@ export interface TaxIssue {
     severity: "high" | "medium" | "low"
 }
 
+// Enhanced issue type for better type safety
+export interface ValidationIssue {
+    id: number
+    invoiceNumber: string
+    invoiceDate: string
+    taxCode: string
+    vatAmount: number
+    currency: string
+    issueType: string
+    originalValue: string
+    suggestedValue: string
+    status: "pending" | "corrected" | "ignored"
+    severity: "high" | "medium" | "low"
+    details?: {
+        columnName?: string
+        dataType?: string
+        missingRows?: string[]
+        invalidRows?: string[]
+        hasMoreRows?: boolean
+        totalMissing?: number
+        totalRows?: number
+        invalidCount?: number
+        percentage?: number
+        description?: string
+        expectedType?: string
+    }
+}
+
 
 
 export interface OverviewStepProps {

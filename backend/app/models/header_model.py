@@ -14,22 +14,24 @@ async def get_all_headers():
     return headers
 
 
-async def create_header(label: str, value: str, aliases: list[str]):
+async def create_header(label: str, value: str, aliases: list[str], type: str):
     header = {
         "label": label,
         "value": value,
-        "aliases": aliases
+        "aliases": aliases,
+        "type": type
     }
     result = await db.headers.insert_one(header)
     header["_id"] = str(result.inserted_id)  # Convert to string immediately
     return header
 
 
-async def update_header(header_id: str, label: str, value: str, aliases: list[str]):
+async def update_header(header_id: str, label: str, value: str, aliases: list[str], type: str):
     updated_data = {
         "label": label,
         "value": value,
         "aliases": aliases,
+        "type": type
     }
     result = await db.headers.update_one(
         {"_id": ObjectId(header_id)},
