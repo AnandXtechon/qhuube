@@ -160,7 +160,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
               originalValue: "Column not found",
               suggestedValue: `Add '${headerIssue.header_label}' column`,
               status: "pending",
-              severity: "high",
+              severity: "High",
               details: {
                 columnName: headerIssue.header_label,
                 description: headerIssue.description,
@@ -177,19 +177,20 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
             let issueTypeLabel = ""
             let originalValue = ""
             let suggestedValue = ""
-            let severity: "high" | "medium" | "low" = "low"
+            let severity: "High" | "Medium" | "Low" = "Low"
 
             if (isInvalidType) {
-              issueTypeLabel = `Invalid Data Type: ${dataIssue.column_name}`
-              originalValue = `${dataIssue.invalid_count} invalid ${dataIssue.expected_type} values (${dataIssue.percentage}%)`
-              suggestedValue = `Fix data format in ${dataIssue.column_name} to match ${dataIssue.expected_type} type`
-              severity = dataIssue.percentage > 50 ? "high" : dataIssue.percentage > 20 ? "medium" : "low"
+              issueTypeLabel = `Incorrect Information in "${dataIssue.column_name}"`;
+              originalValue = `${dataIssue.invalid_count} value(s) don't match the expected format`;
+              suggestedValue = `Ensure values in "${dataIssue.column_name}" follow the correct ${dataIssue.expected_type} format`;
+              severity = dataIssue.percentage > 50 ? "High" : dataIssue.percentage > 20 ? "Medium" : "Low";
             } else if (isMissingData) {
-              issueTypeLabel = `Missing Data: ${dataIssue.column_name}`
-              originalValue = `${dataIssue.total_missing} empty values (${dataIssue.percentage}%)`
-              suggestedValue = `Fill missing data in ${dataIssue.column_name}`
-              severity = dataIssue.percentage > 50 ? "high" : dataIssue.percentage > 20 ? "medium" : "low"
+              issueTypeLabel = `Missing Information in "${dataIssue.column_name}"`;
+              originalValue = `${dataIssue.total_missing} missing or empty value(s)`;
+              suggestedValue = `Please provide the missing data in "${dataIssue.column_name}"`;
+              severity = dataIssue.percentage > 50 ? "High" : dataIssue.percentage > 20 ? "Medium" : "Low";
             }
+
 
             transformedIssues.push({
               id: issueId++,
@@ -306,11 +307,11 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "high":
+      case "High":
         return "bg-red-100 text-red-700 border-red-200"
-      case "medium":
+      case "Medium":
         return "bg-orange-100 text-orange-700 border-orange-200"
-      case "low":
+      case "Low":
         return "bg-yellow-100 text-yellow-700 border-yellow-200"
       default:
         return "bg-gray-100 text-gray-700 border-gray-200"
@@ -331,9 +332,9 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
   const getIssueTypeIcon = (issueType: string) => {
     if (issueType.includes("Missing Column")) {
       return <Database className="w-4 h-4 text-red-500" />
-    } else if (issueType.includes("Missing Data")) {
+    } else if (issueType.includes("Missing Information")) {
       return <XCircle className="w-4 h-4 text-orange-500" />
-    } else if (issueType.includes("Invalid Data Type")) {
+    } else if (issueType.includes("Incorrect Information")) {
       return <Type className="w-4 h-4 text-purple-500" />
     }
     return <AlertCircle className="w-4 h-4 text-gray-500" />
@@ -342,20 +343,23 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
   if (isLoading) {
     return (
-      <div className="min-h-screen mt-12 lg:mt-16 py-4 sm:py-6 lg:py-8">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-full mx-auto mt-16 xl:mt-4">
-            <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Validating Files...</h1>
-              <p className="text-sm sm:text-base text-gray-600 mb-8">
-                Please wait while we analyze your uploaded files for data quality issues
-              </p>
-             </div>
+      <div className="min-h-screen flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col items-center gap-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600" />
+
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2">
+              Validating your files...
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 max-w-md">
+              We&apos;re checking your uploaded files for formatting and data issues. This may take a few moments.
+            </p>
           </div>
         </div>
       </div>
     )
   }
+
 
   if (validationError) {
     return (
@@ -383,19 +387,19 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
   }
 
   return (
-    <div className="min-h-screen mt-12 lg:mt-16 py-4 sm:py-6 lg:py-8">
+    <div className="mt-12 lg:mt-16 py-4 sm:py-6 lg:py-8">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-full mx-auto mt-16 xl:mt-4">
           {/* Header */}
           <div className="text-center mb-6 lg:mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Data Validation Results</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Tax Correction Issues</h1>
             <p className="text-sm sm:text-base text-gray-600">
               Review and address the data quality issues found in your uploaded files
             </p>
           </div>
 
           {/* Header Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 lg:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
             <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -420,7 +424,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 shadow-sm">
+            {/* <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 lg:w-12 lg:h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                   <XCircle className="w-5 h-5 lg:w-6 lg:h-6 text-orange-600" />
@@ -430,7 +434,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                   <div className="text-sm text-gray-600">Pending</div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Issue Type Breakdown */}
@@ -486,7 +490,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                       className="flex items-center gap-2 bg-transparent"
                     >
                       <Download className="w-4 h-4" />
-                      Report: {fileMeta.name.substring(0, 15)}...
+                      {fileMeta.name}
                     </Button>
                   ))}
                   {allIssuesResolved && issues.length > 0 && (
@@ -505,13 +509,12 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
           {/* No Issues Found */}
           {issues.length === 0 && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 text-center">
+            <div className= "rounded-lg p-6 mb-12 text-center">
               <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-green-900 mb-2">Validation Successful!</h3>
               <p className="text-green-700 mb-4">
                 All your files have been validated successfully with no data quality issues found.
               </p>
-
             </div>
           )}
 
@@ -627,9 +630,9 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                               {issue.details.expectedType && (
                                 <div className="text-gray-600">Expected: {issue.details.expectedType}</div>
                               )}
-                              {issue.details.percentage && (
+                              {/* {issue.details.percentage && (
                                 <div className="text-gray-600">Affected: {issue.details.percentage}%</div>
-                              )}
+                              )} */}
                             </div>
                           )}
                         </TableCell>

@@ -74,7 +74,7 @@ const TaxComplianceSection = () => {
                                 </div>
                                 <div>
                                     <p className="text-gray-800 font-medium leading-relaxed">
-                                        Paying extra for accountants or risking fines due to non-compliance?
+                                        Making VAT mistakes that cost you time and money? Qhuube simplifies it all — no more guesswork.
                                     </p>
                                 </div>
                             </div>

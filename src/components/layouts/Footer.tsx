@@ -33,7 +33,7 @@ const Footer = () => {
   ]
   const contactDetails = {
     email: "connect@qhuube.com",
-    phone: "+353 1 270 5111",
+    phone: "+353 1 963 0270",
     address: "Balheary Road, Swords, Dublin K67E5A0",
   }
   return (

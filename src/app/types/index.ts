@@ -59,7 +59,7 @@ export interface TaxIssue {
     originalValue: string
     suggestedValue: string
     status: "pending" | "corrected" | "ignored"
-    severity: "high" | "medium" | "low"
+    severity: "High" | "Medium" | "Low"
 }
 
 // Enhanced issue type for better type safety
@@ -74,7 +74,7 @@ export interface ValidationIssue {
     originalValue: string
     suggestedValue: string
     status: "pending" | "corrected" | "ignored"
-    severity: "high" | "medium" | "low"
+    severity: "High" | "Medium" | "Low"
     details?: {
         columnName?: string
         dataType?: string

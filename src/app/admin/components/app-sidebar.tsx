@@ -1,5 +1,6 @@
-import * as React from "react"
+"use client"
 
+import type * as React from "react"
 import {
     Sidebar,
     SidebarContent,
@@ -13,6 +14,7 @@ import {
     SidebarMenuSubItem,
     SidebarRail,
 } from "@/components/ui/sidebar"
+import { usePathname } from "next/navigation"
 
 // This is sample data.
 const data = {
@@ -23,7 +25,7 @@ const data = {
             items: [
                 {
                     title: "Users",
-                    url: "#",
+                    url: "/admin/users",
                 },
                 {
                     title: "Header Mapping",
@@ -32,14 +34,15 @@ const data = {
                 {
                     title: "Tax Settings",
                     url: "/admin/tax-settings",
-                }
+                },
             ],
         },
-
     ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const currentPath = usePathname()
+
     return (
         <Sidebar {...props}>
             <SidebarHeader>
@@ -68,10 +71,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 </SidebarMenuButton>
                                 {item.items?.length ? (
                                     <SidebarMenuSub>
-                                        {item.items.map((item) => (
-                                            <SidebarMenuSubItem key={item.title}>
-                                                <SidebarMenuSubButton asChild>
-                                                    <a href={item.url}>{item.title}</a>
+                                        {item.items.map((subItem) => (
+                                            <SidebarMenuSubItem key={subItem.title}>
+                                                <SidebarMenuSubButton asChild isActive={currentPath === subItem.url}>
+                                                    <a href={subItem.url}>{subItem.title}</a>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>
                                         ))}
