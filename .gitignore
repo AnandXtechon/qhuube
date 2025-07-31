@@ -33,9 +33,26 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# .backend
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.h5
+*.pkl
+*.csv
+.DS_Store
+.env
+venv/
+node_modules/
+*.log
+
