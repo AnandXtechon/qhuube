@@ -1,4 +1,5 @@
 "use client"
+
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import UploadStep from "./upload-step"
@@ -6,33 +7,63 @@ import OverviewStep from "./overview-step"
 import CorrectionStep from "./correction-step"
 import StepIndicator from "./step-indicator"
 import { useUploadStore } from "@/store/uploadStore"
-// import PaymentStep from "./payment-step"
+import PaymentStep from "./payment-step"
 import { useSearchParams, useRouter } from "next/navigation"
 import Footer from "./footer"
 
 const VATComplianceWizard = () => {
     const searchParams = useSearchParams()
+    const router = useRouter()
     const [currentStep, setCurrentStep] = useState(1)
+    const { uploadedFiles, setUploadedFiles, restoreFileObjects, paymentCompleted } = useUploadStore()
 
+    // Restore file objects on component mount (after page refresh)
+    useEffect(() => {
+        restoreFileObjects()
+    }, [restoreFileObjects])
+
+    // Handle step navigation from URL params
     useEffect(() => {
         const stepParam = Number(searchParams.get("step"))
         if (!isNaN(stepParam) && stepParam >= 1 && stepParam <= 4) {
             setCurrentStep(stepParam)
         }
+
+        // Handle payment return
+        const paymentSuccess = searchParams.get("payment_success")
+        if (paymentSuccess === "true") {
+            // Clear payment-related localStorage
+            localStorage.removeItem("pre-payment-step")
+            localStorage.removeItem("payment-initiated")
+        }
     }, [searchParams])
 
-    const { uploadedFiles, setUploadedFiles } = useUploadStore()
+    // Check for interrupted payment flow
+    useEffect(() => {
+        const prePaymentStep = localStorage.getItem("pre-payment-step")
+        const paymentInitiated = localStorage.getItem("payment-initiated")
+
+        if (prePaymentStep && paymentInitiated) {
+            const initiatedTime = Number.parseInt(paymentInitiated)
+            const now = Date.now()
+
+            // If more than 30 minutes have passed, assume payment was abandoned
+            if (now - initiatedTime > 30 * 60 * 1000) {
+                localStorage.removeItem("pre-payment-step")
+                localStorage.removeItem("payment-initiated")
+            }
+        }
+    }, [])
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [correctedData, setCorrectedData] = useState<any[]>([])
 
     const steps = [
         { id: 1, name: "Upload", component: UploadStep },
         { id: 2, name: "Correction", component: CorrectionStep },
-        // { id: 3, name: "Payment", component: PaymentStep },
+        { id: 3, name: "Payment", component: PaymentStep },
         { id: 4, name: "Overview", component: OverviewStep },
     ]
-
-    const router = useRouter()
 
     const handleNext = () => {
         if (currentStep < steps.length) {
@@ -51,7 +82,10 @@ const VATComplianceWizard = () => {
     }
 
     const handleStepClick = (stepId: number) => {
-        if (stepId <= currentStep || stepId === currentStep + 1) {
+        // Allow navigation to previous steps or next step
+        // For payment step, only allow if files are uploaded
+        // For overview step, only allow if payment is completed
+        if (stepId <= currentStep || stepId === currentStep + 1 || (stepId === 4 && paymentCompleted)) {
             setCurrentStep(stepId)
             router.push(`/upload?step=${stepId}`)
         }
@@ -60,10 +94,8 @@ const VATComplianceWizard = () => {
     const CurrentStepComponent = steps[currentStep - 1].component
 
     return (
-
         <div className="min-h-screen flex flex-col justify-between">
             <StepIndicator steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
-
             <motion.div
                 key={currentStep}
                 initial={{ opacity: 0, x: 20 }}
@@ -83,8 +115,8 @@ const VATComplianceWizard = () => {
                     setCorrectedData={setCorrectedData}
                 />
             </motion.div>
-            <Footer/>
-            </div>
+            <Footer />
+        </div>
     )
 }
 

@@ -4,7 +4,8 @@ import { useCallback } from "react"
 import { useUploadStore } from "@/store/uploadStore"
 
 export const useFileUpload = () => {
-    const { uploadedFiles, uploadProgress, addUploadedFiles, updateFileProgress, removeFile } = useUploadStore()
+    const { uploadedFiles, uploadProgress, sessionIds, addUploadedFiles, updateFileProgress, removeFile, setSessionId } =
+        useUploadStore()
 
     const simulateUpload = useCallback(
         (fileName: string) => {
@@ -22,7 +23,7 @@ export const useFileUpload = () => {
     )
 
     const handleFiles = useCallback(
-        (files: File[]) => {
+        async (files: File[]) => {
             const validFiles = files.filter((file) => {
                 const extension = file.name.split(".").pop()?.toLowerCase()
                 const isValidType = ["csv", "txt", "xls", "xlsx"].includes(extension || "")
@@ -32,15 +33,28 @@ export const useFileUpload = () => {
 
             if (validFiles.length > 0) {
                 addUploadedFiles(validFiles)
+
+                // Simulate upload progress for each file
                 validFiles.forEach((file) => simulateUpload(file.name))
+
+                // After upload simulation is complete, we would normally get session IDs
+                // For now, we'll generate mock session IDs
+                // In real implementation, this would come from the validation API response
+                setTimeout(() => {
+                    validFiles.forEach((file) => {
+                        const mockSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                        setSessionId(file.name, mockSessionId)
+                    })
+                }, 2000) // Wait for upload simulation to complete
             }
         },
-        [addUploadedFiles, simulateUpload],
+        [addUploadedFiles, simulateUpload, setSessionId],
     )
 
     return {
         uploadedFiles,
         uploadProgress,
+        sessionIds,
         handleFiles,
         removeFile,
     }

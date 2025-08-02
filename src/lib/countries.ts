@@ -1,228 +1,32 @@
 export const EU_COUNTRIES = [
-    "Austria",
-    "Belgium",
-    "Bulgaria",
-    "Croatia",
-    "Cyprus",
-    "Czech Republic",
-    "Denmark",
-    "Estonia",
-    "Finland",
-    "France",
-    "Germany",
-    "Greece",
-    "Hungary",
-    "Ireland",
-    "Italy",
-    "Latvia",
-    "Lithuania",
-    "Luxembourg",
-    "Malta",
-    "Netherlands",
-    "Poland",
-    "Portugal",
-    "Romania",
-    "Slovakia",
-    "Slovenia",
-    "Spain",
-    "Sweden",
-]
+    "AT", // Austria
+    "BE", // Belgium
+    "BG", // Bulgaria
+    "HR", // Croatia
+    "CY", // Cyprus
+    "CZ", // Czech Republic
+    "DK", // Denmark
+    "EE", // Estonia
+    "FI", // Finland
+    "FR", // France
+    "DE", // Germany
+    "GR", // Greece
+    "HU", // Hungary
+    "IE", // Ireland
+    "IT", // Italy
+    "LV", // Latvia
+    "LT", // Lithuania
+    "LU", // Luxembourg
+    "MT", // Malta
+    "NL", // Netherlands
+    "PL", // Poland
+    "PT", // Portugal
+    "RO", // Romania
+    "SK", // Slovakia
+    "SI", // Slovenia
+    "ES", // Spain
+    "SE", // Sweden
+];
 
 export const VAT_CATEGORIES = ["Standard", "Reduced", "Super Reduced", "Zero Rate", "Exempt"]
 
-
-
-export const TAX_RULES = [
-    {
-        id: "1",
-        product_type: "Electronics",
-        country: "Germany",
-        vat_rate: 19,
-        vat_category: "Standard",
-        shipping_vat_rate: 19,
-    },
-    {
-        id: "2",
-        product_type: "Books",
-        country: "France",
-        vat_rate: 5.5,
-        vat_category: "Reduced",
-        shipping_vat_rate: 20,
-    },
-    {
-        id: "3",
-        product_type: "Food",
-        country: "Netherlands",
-        vat_rate: 9,
-        vat_category: "Reduced",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "4",
-        product_type: "Clothing",
-        country: "Italy",
-        vat_rate: 22,
-        vat_category: "Standard",
-        shipping_vat_rate: 22,
-    },
-    {
-        id: "5",
-        product_type: "Medicine",
-        country: "Spain",
-        vat_rate: 4,
-        vat_category: "Super Reduced",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "6",
-        product_type: "Software",
-        country: "Belgium",
-        vat_rate: 21,
-        vat_category: "Standard",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "7",
-        product_type: "Newspapers",
-        country: "Austria",
-        vat_rate: 10,
-        vat_category: "Reduced",
-        shipping_vat_rate: 20,
-    },
-    {
-        id: "8",
-        product_type: "Art",
-        country: "Portugal",
-        vat_rate: 6,
-        vat_category: "Reduced",
-        shipping_vat_rate: 23,
-    },
-    {
-        id: "9",
-        product_type: "Electronics",
-        country: "Germany",
-        vat_rate: 19,
-        vat_category: "Standard",
-        shipping_vat_rate: 19,
-    },
-    {
-        id: "10",
-        product_type: "Books",
-        country: "France",
-        vat_rate: 5.5,
-        vat_category: "Reduced",
-        shipping_vat_rate: 20,
-    },
-    {
-        id: "11",
-        product_type: "Food",
-        country: "Netherlands",
-        vat_rate: 9,
-        vat_category: "Reduced",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "12",
-        product_type: "Clothing",
-        country: "Italy",
-        vat_rate: 22,
-        vat_category: "Standard",
-        shipping_vat_rate: 22,
-    },
-    {
-        id: "13",
-        product_type: "Medicine",
-        country: "Spain",
-        vat_rate: 4,
-        vat_category: "Super Reduced",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "14",
-        product_type: "Software",
-        country: "Belgium",
-        vat_rate: 21,
-        vat_category: "Standard",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "15",
-        product_type: "Newspapers",
-        country: "Austria",
-        vat_rate: 10,
-        vat_category: "Reduced",
-        shipping_vat_rate: 20,
-    },
-    {
-        id: "16",
-        product_type: "Art",
-        country: "Portugal",
-        vat_rate: 6,
-        vat_category: "Reduced",
-        shipping_vat_rate: 23,
-    },
-    {
-        id: "17",
-        product_type: "Electronics",
-        country: "Germany",
-        vat_rate: 19,
-        vat_category: "Standard",
-        shipping_vat_rate: 19,
-    },
-    {
-        id: "18",
-        product_type: "Books",
-        country: "France",
-        vat_rate: 5.5,
-        vat_category: "Reduced",
-        shipping_vat_rate: 20,
-    },
-    {
-        id: "19",
-        product_type: "Food",
-        country: "Netherlands",
-        vat_rate: 9,
-        vat_category: "Reduced",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "20",
-        product_type: "Clothing",
-        country: "Italy",
-        vat_rate: 22,
-        vat_category: "Standard",
-        shipping_vat_rate: 22,
-    },
-    {
-        id: "21",
-        product_type: "Medicine",
-        country: "Spain",
-        vat_rate: 4,
-        vat_category: "Super Reduced",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "22",
-        product_type: "Software",
-        country: "Belgium",
-        vat_rate: 21,
-        vat_category: "Standard",
-        shipping_vat_rate: 21,
-    },
-    {
-        id: "23",
-        product_type: "Newspapers",
-        country: "Austria",
-        vat_rate: 10,
-        vat_category: "Reduced",
-        shipping_vat_rate: 20,
-    },
-    {
-        id: "24",
-        product_type: "Art",
-        country: "Portugal",
-        vat_rate: 6,
-        vat_category: "Reduced",
-        shipping_vat_rate: 23,
-    },
-]

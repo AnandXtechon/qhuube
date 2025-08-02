@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import type React from "react"
-
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { motion } from "framer-motion"
 import { FileText, FileSpreadsheet, X, ArrowRight, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,12 +10,15 @@ import { fadeInLeft } from "@/lib/animation"
 import { useFileUpload } from "../hooks/useFileUpload"
 import type { UploadStepProps } from "@/app/types"
 import { useRouter } from "next/navigation"
+import { useUploadStore } from "@/store/uploadStore"
+import axios from "axios"
 
 const UploadStep = ({ onNext }: UploadStepProps) => {
     const [dragActive, setDragActive] = useState(false)
+    const [isValidating, setIsValidating] = useState(false)
     const router = useRouter()
-
     const { uploadedFiles, uploadProgress, handleFiles, removeFile } = useFileUpload()
+    const { setSessionIds } = useUploadStore()
 
     const getFileIcon = (fileName: string) => {
         const ext = fileName?.split(".").pop()?.toLowerCase()
@@ -56,6 +59,50 @@ const UploadStep = ({ onNext }: UploadStepProps) => {
             handleFiles(Array.from(e.target.files))
         }
     }
+
+    // Validate files and get session IDs when all files are uploaded
+    const validateFiles = useCallback(async () => {
+        if (uploadedFiles.length === 0) return
+
+        const allFilesUploaded = uploadedFiles.every((file) => uploadProgress[file.name] >= 100)
+        if (!allFilesUploaded) return
+
+        setIsValidating(true)
+        try {
+            const formData = new FormData()
+            uploadedFiles.forEach((fileMeta) => {
+                if (fileMeta.file) {
+                    formData.append("files", fileMeta.file, fileMeta.name)
+                }
+            })
+
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/validate-file`, formData, {
+                headers: { Accept: "application/json" },
+                timeout: 30000,
+            })
+
+            // Extract session IDs from response
+            const sessionMapping: Record<string, string> = {}
+            response.data.files?.forEach((fileResult: any) => {
+                if (fileResult.session_id) {
+                    sessionMapping[fileResult.file_name] = fileResult.session_id
+                }
+            })
+
+            setSessionIds(sessionMapping)
+            console.log("Session IDs set:", sessionMapping)
+        } catch (error) {
+            console.error("Validation failed:", error)
+            // Continue anyway - validation will happen in the next step
+        } finally {
+            setIsValidating(false)
+        }
+    }, [uploadedFiles, uploadProgress, setSessionIds])
+
+    // Auto-validate when all files are uploaded
+    useEffect(() => {
+        validateFiles()
+    }, [validateFiles])
 
     const allFilesUploaded = uploadedFiles.length > 0 && uploadedFiles.every((file) => uploadProgress[file.name] >= 100)
 
@@ -165,6 +212,24 @@ const UploadStep = ({ onNext }: UploadStepProps) => {
                                 </motion.div>
                             )}
 
+                            {/* Validation Progress */}
+                            {isValidating && (
+                                <motion.div
+                                    variants={fadeInLeft}
+                                    initial="hidden"
+                                    animate="show"
+                                    className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-sm sm:shadow-md lg:shadow-lg border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-sky-600" />
+                                        <div>
+                                            <h3 className="text-sm md:text-lg font-semibold text-gray-900">Preparing files...</h3>
+                                            <p className="text-sm text-gray-600">Setting up validation sessions</p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
                             {/* Uploaded Files */}
                             {uploadedFiles.filter((file) => uploadProgress[file.name] >= 100).length > 0 && (
                                 <motion.div
@@ -216,14 +281,22 @@ const UploadStep = ({ onNext }: UploadStepProps) => {
                                     <ArrowLeft className="w-4 h-4" />
                                     Back
                                 </Button>
-
                                 <Button
                                     className="w-full flex items-center justify-center sm:w-auto sm:min-w-[120px] bg-sky-600 hover:bg-sky-700 text-white text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5"
-                                    disabled={!allFilesUploaded}
+                                    disabled={!allFilesUploaded || isValidating}
                                     onClick={onNext}
                                 >
-                                    Continue
-                                    <ArrowRight className="w-5 h-5" />
+                                    {isValidating ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                            Preparing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Continue
+                                            <ArrowRight className="w-5 h-5" />
+                                        </>
+                                    )}
                                 </Button>
                             </motion.div>
                         </div>

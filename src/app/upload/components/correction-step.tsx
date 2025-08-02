@@ -24,13 +24,12 @@ import type { CorrectionStepProps, ValidationIssue } from "@/app/types"
 import { useUploadStore } from "@/store/uploadStore"
 import axios from "axios"
 
-
 export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepProps) {
   const [issues, setIssues] = useState<ValidationIssue[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [validationSummary, setValidationSummary] = useState<any>(null)
-  const { uploadedFiles } = useUploadStore()
+  const { uploadedFiles, sessionIds } = useUploadStore()
 
   const totalFiles = uploadedFiles.length
   const correctedIssues = issues.filter((issue) => issue.status === "corrected").length
@@ -47,7 +46,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
           : issue.issueType.includes("Invalid")
             ? "invalid_data"
             : "other"
-
       if (!acc[type]) acc[type] = []
       acc[type].push(issue)
       return acc
@@ -114,7 +112,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
     try {
       const formData = new FormData()
-
       const validFiles = uploadedFiles.filter((fileMeta) => {
         if (!(fileMeta.file instanceof File)) {
           console.error("Not a File object:", fileMeta.file)
@@ -180,17 +177,16 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
             let severity: "High" | "Medium" | "Low" = "Low"
 
             if (isInvalidType) {
-              issueTypeLabel = `Incorrect Information in "${dataIssue.column_name}"`;
-              originalValue = `${dataIssue.invalid_count} value(s) don't match the expected format`;
-              suggestedValue = `Ensure values in "${dataIssue.column_name}" follow the correct ${dataIssue.expected_type} format`;
-              severity = dataIssue.percentage > 50 ? "High" : dataIssue.percentage > 20 ? "Medium" : "Low";
+              issueTypeLabel = `Incorrect Information in "${dataIssue.column_name}"`
+              originalValue = `${dataIssue.invalid_count} value(s) don't match the expected format`
+              suggestedValue = `Ensure values in "${dataIssue.column_name}" follow the correct ${dataIssue.expected_type} format`
+              severity = dataIssue.percentage > 50 ? "High" : dataIssue.percentage > 20 ? "Medium" : "Low"
             } else if (isMissingData) {
-              issueTypeLabel = `Missing Information in "${dataIssue.column_name}"`;
-              originalValue = `${dataIssue.total_missing} missing or empty value(s)`;
-              suggestedValue = `Please provide the missing data in "${dataIssue.column_name}"`;
-              severity = dataIssue.percentage > 50 ? "High" : dataIssue.percentage > 20 ? "Medium" : "Low";
+              issueTypeLabel = `Missing Information in "${dataIssue.column_name}"`
+              originalValue = `${dataIssue.total_missing} missing or empty value(s)`
+              suggestedValue = `Please provide the missing data in "${dataIssue.column_name}"`
+              severity = dataIssue.percentage > 50 ? "High" : dataIssue.percentage > 20 ? "Medium" : "Low"
             }
-
 
             transformedIssues.push({
               id: issueId++,
@@ -225,8 +221,8 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
       setIssues(transformedIssues)
     } catch (err: any) {
       console.error("Validation error:", err.response?.data || err.message)
-
       let errorMessage = "Validation failed"
+
       if (err.response?.data) {
         if (typeof err.response.data === "string") {
           errorMessage = err.response.data
@@ -261,21 +257,16 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
     validationIssues()
   }, [validationIssues])
 
-
-  async function downloadVatReportForFile(invoiceNumberOrFileName: string) {
+  async function downloadVatReportForFile(fileName: string) {
     try {
-      const fileMeta = uploadedFiles.find((f) => f.name === invoiceNumberOrFileName)
-      if (!fileMeta || !(fileMeta.file instanceof File)) {
-        alert("Original file not found for download")
+      const sessionId = sessionIds[fileName]
+      if (!sessionId) {
+        alert("Session not found for this file")
         return
       }
 
-      const formData = new FormData()
-      formData.append("file", fileMeta.file, fileMeta.name)
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-issues`, {
-        method: "POST",
-        body: formData,
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-issues/${sessionId}`, {
+        method: "GET",
       })
 
       if (!response.ok) throw new Error("Failed to download VAT report")
@@ -283,12 +274,11 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
       const blob = await response.blob()
       const cd = response.headers.get("Content-Disposition")
       let filename = "vat_report.xlsx"
-
       if (cd) {
         const match = cd.match(/filename="?([^";]+)"?/)
         if (match) filename = match[1]
       } else {
-        filename = fileMeta.name.replace(/\.[^.]+$/, "") + "_vat_report.xlsx"
+        filename = fileName.replace(/\.[^.]+$/, "") + "_vat_report.xlsx"
       }
 
       const url = window.URL.createObjectURL(blob)
@@ -340,13 +330,11 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
     return <AlertCircle className="w-4 h-4 text-gray-500" />
   }
 
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col items-center gap-6">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600" />
-
           <div className="text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2">
               Validating your files...
@@ -359,7 +347,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
       </div>
     )
   }
-
 
   if (validationError) {
     return (
@@ -411,7 +398,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                 </div>
               </div>
             </div>
-
             <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 lg:w-12 lg:h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -423,49 +409,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                 </div>
               </div>
             </div>
-
-            {/* <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <XCircle className="w-5 h-5 lg:w-6 lg:h-6 text-orange-600" />
-                </div>
-                <div>
-                  <div className="text-xl lg:text-2xl font-semibold text-orange-600">{pendingIssues}</div>
-                  <div className="text-sm text-gray-600">Pending</div>
-                </div>
-              </div>
-            </div> */}
           </div>
-
-          {/* Issue Type Breakdown */}
-          {/* {issues.length > 0 && (
-            <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 shadow-sm mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Issue Breakdown</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-                  <Database className="w-5 h-5 text-red-600" />
-                  <div>
-                    <div className="font-medium text-red-900">Missing Columns</div>
-                    <div className="text-sm text-red-700">{groupedIssues.missing_headers?.length || 0} issues</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                  <XCircle className="w-5 h-5 text-orange-600" />
-                  <div>
-                    <div className="font-medium text-orange-900">Missing Data</div>
-                    <div className="text-sm text-orange-700">{groupedIssues.missing_data?.length || 0} issues</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                  <Type className="w-5 h-5 text-purple-600" />
-                  <div>
-                    <div className="font-medium text-purple-900">Invalid Data Types</div>
-                    <div className="text-sm text-purple-700">{groupedIssues.invalid_data?.length || 0} issues</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )} */}
 
           {/* Download Section */}
           {uploadedFiles.length > 0 && (
@@ -509,7 +453,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
           {/* No Issues Found */}
           {issues.length === 0 && (
-            <div className= "rounded-lg p-6 mb-12 text-center">
+            <div className="rounded-lg p-6 mb-12 text-center">
               <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-green-900 mb-2">Validation Successful!</h3>
               <p className="text-green-700 mb-4">
@@ -589,7 +533,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                         </div>
                       </div>
                     </div>
-
                   </div>
                 </motion.div>
               ))}
@@ -619,7 +562,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                             <div className="font-medium text-gray-900 text-sm">{issue.issueType}</div>
                           </div>
                         </TableCell>
-
                         <TableCell className="py-4">
                           <div className="text-sm text-gray-900 font-medium mb-1">{issue.invoiceNumber}</div>
                           {issue.details && (
@@ -630,13 +572,9 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                               {issue.details.expectedType && (
                                 <div className="text-gray-600">Expected: {issue.details.expectedType}</div>
                               )}
-                              {/* {issue.details.percentage && (
-                                <div className="text-gray-600">Affected: {issue.details.percentage}%</div>
-                              )} */}
                             </div>
                           )}
                         </TableCell>
-
                         <TableCell className="py-4">
                           <div className="text-sm">
                             <div className="text-red-600 font-mono bg-red-50 w-fit px-2 py-1 rounded text-xs mb-1">
@@ -650,13 +588,11 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                             )}
                           </div>
                         </TableCell>
-
                         <TableCell className="py-4">
                           <div className="text-green-600 font-mono bg-green-50 w-fit px-2 py-1 rounded text-xs">
                             {issue.suggestedValue}
                           </div>
                         </TableCell>
-
                         <TableCell className="py-4">
                           <Badge className={`text-xs px-2 py-1 ${getSeverityColor(issue.severity)}`}>
                             {issue.severity}

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 
-interface FileMeta {
-    name: string;
-    size: number;
-    type: string;
-    file: File;
+export interface FileMeta {
+    file?: File // Make file optional for persistence
+    name: string
+    size: number
+    type: string
+    // Add serializable file data for persistence
+    fileData?: string // base64 encoded file data
 }
-
 
 export interface UploadStepProps {
     onNext: () => void;
@@ -18,15 +19,22 @@ export interface UploadStepProps {
 
 
 export interface UploadState {
-    uploadedFiles: FileMeta[];
-    uploadProgress: Record<string, number>;
-    setUploadedFiles: (files: FileMeta[]) => void;
-    addUploadedFiles: (files: FileMeta[]) => void;
-    setUploadProgress: (progress: Record<string, number>) => void;
-    updateFileProgress: (fileName: string, progress: number) => void;
-    removeFile: (fileName: string) => void;
+    uploadedFiles: FileMeta[]
+    uploadProgress: Record<string, number>
+    sessionIds: Record<string, string> // Map filename to session ID
+    paymentCompleted: boolean
+    setUploadedFiles: (files: FileMeta[]) => void
+    addUploadedFiles: (files: File[]) => void
+    setUploadProgress: (progress: Record<string, number>) => void
+    updateFileProgress: (fileName: string, progress: number) => void
+    removeFile: (fileName: string) => void
+    clearFiles: () => void
+    setSessionId: (fileName: string, sessionId: string) => void
+    setSessionIds: (sessionIds: Record<string, string>) => void
+    setPaymentCompleted: (completed: boolean) => void
+    // Helper to restore File objects from persisted data
+    restoreFileObjects: () => void
 }
-
 
 export interface CorrectionStepProps {
     onNext: () => void
