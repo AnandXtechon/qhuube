@@ -1,0 +1,21 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/blog/create/route": "/api/blog/create",
+  "/pricing/stripe/create/route": "/pricing/stripe/create",
+  "/pricing/stripe/session/[sessionId]/route": "/pricing/stripe/session/[sessionId]",
+  "/favicon.ico/route": "/favicon.ico",
+  "/admin-auth/login/page": "/admin-auth/login",
+  "/cancel/page": "/cancel",
+  "/compliance/page": "/compliance",
+  "/page": "/",
+  "/success/page": "/success",
+  "/upload/page": "/upload",
+  "/admin/create/page": "/admin/create",
+  "/admin/header-mapping/page": "/admin/header-mapping",
+  "/admin/page": "/admin",
+  "/admin/tax-settings/page": "/admin/tax-settings",
+  "/blog/all-posts/page": "/blog/all-posts",
+  "/blog/page": "/blog",
+  "/pricing/page": "/pricing",
+  "/blog/[slug]/page": "/blog/[slug]"
+}

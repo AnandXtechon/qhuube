@@ -1,0 +1,21 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/blog/create/route": "app/api/blog/create/route.js",
+  "/pricing/stripe/create/route": "app/pricing/stripe/create/route.js",
+  "/pricing/stripe/session/[sessionId]/route": "app/pricing/stripe/session/[sessionId]/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/admin-auth/login/page": "app/admin-auth/login/page.js",
+  "/cancel/page": "app/cancel/page.js",
+  "/compliance/page": "app/compliance/page.js",
+  "/page": "app/page.js",
+  "/success/page": "app/success/page.js",
+  "/upload/page": "app/upload/page.js",
+  "/admin/create/page": "app/admin/create/page.js",
+  "/admin/header-mapping/page": "app/admin/header-mapping/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/tax-settings/page": "app/admin/tax-settings/page.js",
+  "/blog/all-posts/page": "app/blog/all-posts/page.js",
+  "/blog/page": "app/blog/page.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/blog/[slug]/page": "app/blog/[slug]/page.js"
+}
