@@ -52,7 +52,7 @@ __pycache__/
 *.csv
 .DS_Store
 .env
-venv/
+backend/venv/
 node_modules/
 *.log
 
