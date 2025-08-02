@@ -11,11 +11,11 @@
   "/success/page": "/success",
   "/upload/page": "/upload",
   "/admin/create/page": "/admin/create",
-  "/admin/header-mapping/page": "/admin/header-mapping",
   "/admin/page": "/admin",
-  "/admin/tax-settings/page": "/admin/tax-settings",
-  "/blog/all-posts/page": "/blog/all-posts",
+  "/admin/header-mapping/page": "/admin/header-mapping",
   "/blog/page": "/blog",
+  "/admin/tax-settings/page": "/admin/tax-settings",
   "/pricing/page": "/pricing",
+  "/blog/all-posts/page": "/blog/all-posts",
   "/blog/[slug]/page": "/blog/[slug]"
 }

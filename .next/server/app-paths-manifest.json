@@ -11,11 +11,11 @@
   "/success/page": "app/success/page.js",
   "/upload/page": "app/upload/page.js",
   "/admin/create/page": "app/admin/create/page.js",
-  "/admin/header-mapping/page": "app/admin/header-mapping/page.js",
   "/admin/page": "app/admin/page.js",
-  "/admin/tax-settings/page": "app/admin/tax-settings/page.js",
-  "/blog/all-posts/page": "app/blog/all-posts/page.js",
+  "/admin/header-mapping/page": "app/admin/header-mapping/page.js",
   "/blog/page": "app/blog/page.js",
+  "/admin/tax-settings/page": "app/admin/tax-settings/page.js",
   "/pricing/page": "app/pricing/page.js",
+  "/blog/all-posts/page": "app/blog/all-posts/page.js",
   "/blog/[slug]/page": "app/blog/[slug]/page.js"
 }
