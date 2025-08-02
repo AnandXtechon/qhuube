@@ -2,16 +2,14 @@ from io import BytesIO
 import io
 from typing import List, Dict, Any
 import pandas as pd
-import numpy as np
 from fastapi import BackgroundTasks, Form, UploadFile, HTTPException, APIRouter, File
 from fastapi.responses import JSONResponse, StreamingResponse
 from app.models.header_model import get_all_headers
 from app.models.product_model import get_all_products
-from app.core.helper import safe_float, safe_round, dataframe_to_json_safe, get_user_friendly_dtype, TYPE_MAP
+from app.core.helper import rename_columns_with_labels, safe_float, safe_round, dataframe_to_json_safe, get_user_friendly_dtype, TYPE_MAP
 from app.core.currency_conversion import get_ecb_fx_rates, get_fx_rate_for_date
 from app.core.send_mail import send_manual_vat_email
 from openpyxl.styles import PatternFill, Font
-from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl import Workbook, load_workbook
 import re
 import uuid
@@ -19,7 +17,7 @@ from datetime import datetime, timedelta
 
 router = APIRouter()
 
-# In-memory storage for processed data (in production, use Redis or database)
+# In-memory storage for processed data (in production, use Redis or database)2
 processed_data_store: Dict[str, Dict[str, Any]] = {}
 
 # Cleanup old entries (older than 1 hour)
@@ -483,23 +481,7 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> tuple:
         df["Final Gross Total"] = gross_total_amounts
         
         # 11. Optionally, rename columns to user-friendly labels from header config
-        all_headers = await get_all_headers()
-        header_labels = {}
-        for header in all_headers:
-            value = header['value']
-            label = header['label']
-            header_labels[value] = label
-                
-        rename_map = {}
-        for col in df.columns:
-            if col in header_labels:
-                rename_map[col] = header_labels[col]
-                print(f"Will rename column '{col}' to '{header_labels[col]}'")
-                
-        if rename_map:
-            df.rename(columns=rename_map, inplace=True)
-        else:
-            print("No columns found that match header values for renaming")
+        df = await rename_columns_with_labels(df)
                 
         # 12. Print final DataFrame for debugging
         pd.set_option('display.max_columns', None)
@@ -522,6 +504,15 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> tuple:
         
         print("Manual Review", manual_review_rows)
         manual_df = pd.DataFrame(manual_review_rows)
+        manual_df = await rename_columns_with_labels(manual_df)
+
+        # Overwrite manual_review_rows with renamed version
+        manual_review_rows = manual_df.to_dict(orient="records")
+
+        manual_review_df = []
+        manual_review_df = df.to_dict(orient="records")
+
+        # Track rows that need manual review
         print("Manual DataFrame", manual_df)
         
         # 14. Return the enriched DataFrame and summary DataFrame
@@ -530,7 +521,8 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> tuple:
                 "status": "manual_review_required",
                 "message": "Some rows could not be processed automatically. We'll email you the results within 24 hours.",
                 "manual_review_count": len(manual_review_rows),
-                "require_email": True  # Frontend will use this flag to prompt the user
+                "require_email": True,  # Frontend will use this flag to prompt the user
+                "manual_review_rows": manual_review_df,
             }
         
         # At the end of enrich_dataframe_with_vat
@@ -808,92 +800,86 @@ async def download_vat_issues(session_id: str):
 @router.post("/download-vat-report/{session_id}")
 async def download_vat_report(session_id: str, background_tasks: BackgroundTasks, user_email: str = Form(...)):
     try:
-        # Retrieve processed data from store
         if session_id not in processed_data_store:
             raise HTTPException(status_code=404, detail="Session not found or expired")
-        
+
         stored_data = processed_data_store[session_id]
         df = stored_data['original_df'].copy()
         file_name = stored_data['file_name']
-        
+
         print("File validation completed")
-        
-        # Call enrichment function
+
         result = await enrich_dataframe_with_vat(df)
         print("Enrichment result:", result)
-        
-        # Handle manual review case where enrichment directly returns a dict
-        if isinstance(result, dict):
-            if result.get("status") == "manual_review_required":
-                print("Manual review required. Preparing email.")
-                                
-                if user_email:     
-                    # Rebuild the manual email file again
-                    manual_email_stream = io.BytesIO()
-                    with pd.ExcelWriter(manual_email_stream, engine='openpyxl') as writer:
-                        df.to_excel(writer, index=False, sheet_name="VAT Report")
-                        # summary_df.to_excel(writer, index=False, sheet_name="Summary")
-                    manual_email_stream.seek(0)
-                    
-                    # Modify font and highlight rows with "Not Found" in any cell
-                    workbook = load_workbook(manual_email_stream)
-                    fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-                    
-                    for sheet_name in ["VAT Report", "Summary"]:
-                        if sheet_name in workbook.sheetnames:
-                            sheet = workbook[sheet_name]
-                                                        
-                            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
-                                highlight_row = any(str(cell.value).strip() == "Not Found" for cell in row)
-                                for cell in row:
-                                    cell.font = Font(name='Calibri', size=12, bold=False)
-                                    if highlight_row:
-                                        cell.fill = fill
-                            
-                            # Set font for header row (row 1)
-                            for cell in sheet[1]:
-                                cell.font = Font(name='Calibri', size=12, bold=False)
-                    
-                    # Re-save to a new stream
-                    final_manual_email_stream = io.BytesIO()
-                    workbook.save(final_manual_email_stream)
-                    final_manual_email_stream.seek(0)
-                    
-                    background_tasks.add_task(
-                        send_manual_vat_email,
-                        "anandpandey1765@gmail.com",  # Admin
-                        user_email,                   # User for context
-                        final_manual_email_stream.getvalue()
-                    )
-                    print("Manual review email task added to background.")
-                else:
-                    print("No user email provided. Skipping manual review email.")
-                
-                if "file_name" not in result:
-                    result["file_name"] = file_name
-                return JSONResponse(status_code=200, content=result)
 
-        # Otherwise, continue with file generation for download and potential email
+        # Handle manual review scenario
+        if isinstance(result, dict) and result.get("status") == "manual_review_required":
+            print("Manual review required. Preparing email.")
+            manual_review_rows = result.get("manual_review_rows", [])
+
+            # ✅ Convert timestamps to strings for JSON safety
+            for row in manual_review_rows:
+                for key, value in row.items():
+                    if isinstance(value, pd.Timestamp):
+                        row[key] = value.strftime("%Y-%m-%d")
+
+            if user_email:
+                # Build Excel with highlighting
+                manual_email_stream = io.BytesIO()
+                with pd.ExcelWriter(manual_email_stream, engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False, sheet_name="VAT Report")
+                manual_email_stream.seek(0)
+
+                workbook = load_workbook(manual_email_stream)
+                fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+
+                for sheet_name in ["VAT Report", "Summary"]:
+                    if sheet_name in workbook.sheetnames:
+                        sheet = workbook[sheet_name]
+                        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+                            highlight_row = any(str(cell.value).strip() == "Not Found" for cell in row)
+                            for cell in row:
+                                cell.font = Font(name='Calibri', size=12, bold=False)
+                                if highlight_row:
+                                    cell.fill = fill
+                        for cell in sheet[1]:
+                            cell.font = Font(name='Calibri', size=12, bold=False)
+
+                final_manual_email_stream = io.BytesIO()
+                workbook.save(final_manual_email_stream)
+                final_manual_email_stream.seek(0)
+
+                background_tasks.add_task(
+                    send_manual_vat_email,
+                    "anandpandey1765@gmail.com",
+                    user_email,
+                    final_manual_email_stream.getvalue(),
+                    manual_review_rows  # ✅ Now safely serializable
+                )
+                print("Manual review email task added to background.")
+            else:
+                print("No user email provided. Skipping manual review email.")
+
+            result["file_name"] = file_name  # ensure included
+
+            return JSONResponse(status_code=200, content=result)
+
+        # Proceed with downloadable file generation
         enriched_df, summary_df, manual_df, vat_summary = result
-        
-        # Format 'order date' column if it exists and is a datetime
+
         for col in enriched_df.columns:
             if "order date" in col.lower() and pd.api.types.is_datetime64_any_dtype(enriched_df[col]):
                 enriched_df[col] = enriched_df[col].dt.strftime("%d-%m-%Y")
 
-        # --- Generate the Excel file for direct download ---
         download_excel_stream = io.BytesIO()
         with pd.ExcelWriter(download_excel_stream, engine='openpyxl') as writer:
             enriched_df.to_excel(writer, index=False, sheet_name="VAT Report")
             summary_df.to_excel(writer, index=False, sheet_name="Summary")
-            
+
             workbook = writer.book
             vat_report_sheet = writer.sheets["VAT Report"]
-            
-            # Leave one empty row after the data
+
             start_row = enriched_df.shape[0] + 3
-            
-            # Write labeled totals below the data
             vat_report_sheet.cell(row=start_row, column=5, value="Overall Net Total")
             vat_report_sheet.cell(row=start_row + 1, column=5, value=vat_summary["overall_net_price"])
             vat_report_sheet.cell(row=start_row, column=13, value="Overall VAT Amount")
@@ -901,16 +887,12 @@ async def download_vat_report(session_id: str, background_tasks: BackgroundTasks
             vat_report_sheet.cell(row=start_row, column=14, value="Overall Gross Total")
             vat_report_sheet.cell(row=start_row + 1, column=14, value=vat_summary["overall_gross_total"])
 
-        # Highlight "Not Found" rows in the downloadable report
         download_excel_stream.seek(0)
         workbook = load_workbook(download_excel_stream)
-        
-        # Apply formatting to both sheets
+
         for sheet_name in ["VAT Report", "Summary"]:
             if sheet_name in workbook.sheetnames:
                 sheet = workbook[sheet_name]
-                                
-                # Set font size 12, no bold
                 for row in sheet.iter_rows():
                     for cell in row:
                         cell.font = Font(name='Calibri', size=12, bold=False)
@@ -921,11 +903,10 @@ async def download_vat_report(session_id: str, background_tasks: BackgroundTasks
 
         print("Manual Df is empty", manual_df.empty)
         download_name = file_name.rsplit('.', 1)[0] + "_vat_report.xlsx"
-        
-        # Clean up the session data after successful download
+
         if session_id in processed_data_store:
             del processed_data_store[session_id]
-        
+
         return StreamingResponse(
             final_download_stream,
             media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -934,33 +915,9 @@ async def download_vat_report(session_id: str, background_tasks: BackgroundTasks
 
     except HTTPException as he:
         print(f"HTTPException caught: {he.detail}")
-        raise he # Re-raise HTTPException to be handled by FastAPI
+        raise he
     except Exception as e:
         print(f"Unhandled exception in download_vat_report: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Could not generate download: {str(e)}")
-
-# Optional: Add endpoint to check session status
-@router.get("/session-status/{session_id}")
-async def get_session_status(session_id: str):
-    if session_id not in processed_data_store:
-        raise HTTPException(status_code=404, detail="Session not found or expired")
-    
-    stored_data = processed_data_store[session_id]
-    return {
-        "session_id": session_id,
-        "file_name": stored_data['file_name'],
-        "timestamp": stored_data['timestamp'],
-        "has_issues": stored_data['has_issues'],
-        "total_rows": stored_data['validation_result']['total_rows']
-    }
-
-# Optional: Add endpoint to clear session manually
-@router.delete("/clear-session/{session_id}")
-async def clear_session(session_id: str):
-    if session_id in processed_data_store:
-        del processed_data_store[session_id]
-        return {"message": "Session cleared successfully"}
-    else:
-        raise HTTPException(status_code=404, detail="Session not found")

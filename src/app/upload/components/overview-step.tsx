@@ -46,6 +46,7 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
   const totalAmount = correctedData?.reduce((sum, row) => sum + row.amount, 0) || 15420.75
   const totalVAT = correctedData?.reduce((sum, row) => sum + (row.amount * row.vatRate) / 100, 0) || 2456.32
   const processedRecords = correctedData?.length || 125
+
   const router = useRouter()
 
   const isValidEmail = (email: string) => {
@@ -88,8 +89,10 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
 
       const jsonResponse = await response.json()
       if (jsonResponse.status === "manual_review_required") {
+        setEmailSent(true)
         toast.success(jsonResponse.message)
       } else {
+        setEmailSent(true)
         toast.success(
           `Manual review request submitted! You'll receive the VAT report for ${currentManualReviewFile} within 24 hours.`,
         )
@@ -108,7 +111,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
 
   async function downloadVatReportForFile(fileName: string) {
     setDownloadingFiles((prev) => new Set(prev).add(fileName))
-
     try {
       const sessionId = sessionIds[fileName]
       if (!sessionId) {
@@ -148,7 +150,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
           toast.success(jsonResponse.message)
           return
         }
-
         console.warn("Unexpected JSON response:", jsonResponse)
         toast.error("Received unexpected response from server.")
         return
@@ -239,7 +240,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
             setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
             return { success: true, filename: fileMeta.name, requiresManualReview: false }
           }
-
           console.warn(`Unexpected JSON response for ${fileMeta.name}:`, jsonResponse)
           completedCount++
           setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
@@ -317,10 +317,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
     setIsEmailSending(false)
     setEmailSent(true)
     toast.success("Email sent successfully")
-    setTimeout(() => {
-      setEmailSent(false)
-      setEmail("")
-    }, 3000)
   }
 
   const getFileIcon = (fileName: string) => {
@@ -336,6 +332,50 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
     setUploadedFiles([])
     router.push("/upload?step=1")
   }
+
+  // If email is sent successfully, show only confirmation message and navigation
+  if (emailSent) {
+    return (
+      <div className="py-10 mt-20 xl:mt-28 bg-white">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Success Message */}
+          <div className="rounded-xl border border-gray-100 p-6 text-center mb-10">
+            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              Email Sent Successfully!
+            </h3>
+            <p className="text-green-700 mb-1">
+              Your VAT compliance reports will be sent to{" "}
+              <span className="font-medium">{email}</span> shortly.
+            </p>
+            <p className="text-green-600 text-sm">
+              Please check your inbox and spam folder for the email.
+            </p>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <Button
+              variant="outline"
+              onClick={onPrevious}
+              className="w-full sm:w-auto bg-white border-gray-300 text-gray-700 hover:bg-gray-100 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Previous Step
+            </Button>
+            <Button
+              className="bg-sky-600 hover:bg-sky-700 text-white w-full sm:w-auto cursor-pointer"
+              onClick={handleStartNewProcess}
+            >
+              <RotateCcw className="w-4 h-4" />
+              Start New Process
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 mt-16 xl:mt-4">
@@ -555,8 +595,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
                     >
                       {isEmailSending ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : emailSent ? (
-                        <CheckCircle className="w-4 h-4" />
                       ) : (
                         <>
                           <Mail className="w-4 h-4" />
@@ -577,14 +615,14 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
               onClick={onPrevious}
               className="w-full sm:w-auto bg-white border-gray-300 py-2 cursor-pointer text-gray-700 hover:bg-gray-50 px-4 sm:px-6 order-2 sm:order-1"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4" />
               Previous Step
             </Button>
             <Button
               className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 cursor-pointer sm:px-6 w-full sm:w-auto order-1 sm:order-2"
               onClick={handleStartNewProcess}
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
+              <RotateCcw className="w-4 h-4" />
               Start New Process
             </Button>
           </div>

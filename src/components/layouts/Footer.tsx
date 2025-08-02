@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Mail, Phone, MapPin, Linkedin, Facebook, Instagram, TwitterIcon as TikTok } from "lucide-react" // Import TikTok icon
+import Image from "next/image"
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -44,8 +45,15 @@ const Footer = () => {
           {/* Company Info */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block mb-4">
-              <span className="text-2xl font-bold text-sky-600">Q</span>
-              <span className="text-xl font-bold text-gray-900">HUUBE</span>
+              <Image
+                src="/icons/Logo-2.png"
+                alt="Logo"
+                width={50}
+                height={50}
+                className="w-full h-auto"
+              />
+              {/* <span className="text-2xl font-bold text-sky-600">Q</span>
+              <span className="text-xl font-bold text-gray-900">HUUBE</span> */}
             </Link>
             <p className="text-gray-600 mb-6 max-w-md">
               Simplifying European tax compliance for modern businesses. Automate your VAT registration, OSS reporting,

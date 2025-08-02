@@ -1,3 +1,4 @@
+// app/upload/loading.tsx
 export default function Loading() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white to-sky-50 px-4">

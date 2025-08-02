@@ -956,3 +956,28 @@ async def download_vat_report(background_tasks: BackgroundTasks, file: UploadFil
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Could not generate download: {str(e)}")
+
+
+# Optional: Add endpoint to check session status
+@router.get("/session-status/{session_id}")
+async def get_session_status(session_id: str):
+    if session_id not in processed_data_store:
+        raise HTTPException(status_code=404, detail="Session not found or expired")
+    
+    stored_data = processed_data_store[session_id]
+    return {
+        "session_id": session_id,
+        "file_name": stored_data['file_name'],
+        "timestamp": stored_data['timestamp'],
+        "has_issues": stored_data['has_issues'],
+        "total_rows": stored_data['validation_result']['total_rows']
+    }
+
+# Optional: Add endpoint to clear session manually
+@router.delete("/clear-session/{session_id}")
+async def clear_session(session_id: str):
+    if session_id in processed_data_store:
+        del processed_data_store[session_id]
+        return {"message": "Session cleared successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Session not found")

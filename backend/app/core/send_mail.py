@@ -1,8 +1,12 @@
-import io
+from typing import Dict, List
 import aiosmtplib
 from email.message import EmailMessage
+from app.core.helper import generate_manual_review_summary
 
-async def send_manual_vat_email(to_email: str, user_email: str, attachment: bytes):
+
+async def send_manual_vat_email(to_email: str, user_email: str, attachment: bytes, manual_review_rows: List[Dict]):
+
+    summary_text = generate_manual_review_summary(manual_review_rows)
     msg = EmailMessage()
     msg["Subject"] = "Manual VAT Processing Required"
     msg["From"] = "mailer@xtechon.com"
@@ -18,6 +22,8 @@ async def send_manual_vat_email(to_email: str, user_email: str, attachment: byte
         - Enriched VAT Report
         - Manual Review Rows
         - Summary by Country
+
+        {summary_text}
         """
     )
 

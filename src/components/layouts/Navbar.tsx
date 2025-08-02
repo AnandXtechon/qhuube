@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { Menu, X, Mail, Phone, MapPin, ChevronDown, ChevronUp, Shield, FileText, Globe, Calculator } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -74,12 +75,18 @@ const Navbar = () => {
   return (
     <nav className={`fixed w-full z-50 bg-white transition-shadow duration-300 ${scrolled ? "shadow-sm" : ""}`}>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-18 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="">
-              <span className="text-2xl font-bold text-sky-600">Q</span>
-              <span className="text-xl font-bold text-gray-900">HUUBE</span>
+              {/* <span className="text-2xl font-bold text-sky-600">Q</span> */}
+              <Image
+                src="/icons/Logo-2.png"
+                alt="Logo"
+                width={50}
+                height={50}
+                className="w-full h-auto"
+              />
             </Link>
           </div>
           {/* Desktop Navigation */}

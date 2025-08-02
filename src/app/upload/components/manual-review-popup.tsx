@@ -27,9 +27,10 @@ export default function ManualReviewPopup({
     const [email, setEmail] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const isValidEmail = (email: string) => {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    }
+    const isValidEmail = (email: string): boolean => {
+        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.trim());
+    };
+
 
     const handleSubmitEmail = async () => {
         if (!isValidEmail(email)) {
