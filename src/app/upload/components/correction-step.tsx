@@ -125,7 +125,8 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
       }
 
       validFiles.forEach((fileMeta) => {
-        formData.append("files", fileMeta.file, fileMeta.name)
+        if (fileMeta.file)
+          formData.append("files", fileMeta.file, fileMeta.name)
       })
 
       const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/validate-file`, formData, {
