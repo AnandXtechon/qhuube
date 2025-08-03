@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 📄 Qhuube – EU VAT OSS Compliance App Documentation
 
-## Getting Started
+---
 
-First, run the development server:
+### **1. Introduction**
+
+**What is Qhuube?**
+Qhuube is a web application designed to streamline **EU VAT OSS (One Stop Shop)** tax reporting for businesses. It allows users to upload transaction data, correct invalid entries, calculate VAT across EU member states, and generate compliant summary reports — all in one place.
+
+**Who is this for?**
+
+* Internal developers
+* HR/compliance teams
+* Financial operations
+* External auditors (read-only access if needed)
+
+---
+
+### **2. Key Features**
+
+* 📁 **Upload** transaction files (CSV or Excel)
+* ✏️ **Correction** of invalid or missing VAT-related data
+* 💳 **Secure payment via Stripe** for compliance services
+* 📊 **Overview & Download** VAT OSS summary report in Excel
+* 📧 Email reports with highlights for manual review (if needed)
+
+---
+
+### **3. Tech Stack**
+
+| Component         | Tech Used                            |
+| ----------------- | ------------------------------------ |
+| **Frontend**      | Next.js, Tailwind CSS, Framer Motion |
+| **Backend**       | FastAPI (Python), Pandas             |
+| **Data Handling** | Excel via `openpyxl`, `pandas`       |
+| **Payments**      | Stripe                               |
+| **Export Format** | Excel files (.xlsx)                  |
+
+---
+
+### **4. App Workflow**
+
+#### 🔼 Step 1: Upload
+
+* Supported formats: `.xlsx`, `.csv`
+* Required fields: Order Date, Country, Net Price, VAT Rate, etc.
+* Validations are applied before processing
+
+#### 🛠️ Step 2: Correction
+
+* Invalid or missing data (e.g. VAT number, country mismatch) is flagged
+* Users can correct data inline or re-upload
+
+#### 💰 Step 3: Payment
+
+* Users are prompted to pay via **Stripe** before proceeding to report generation
+* Stripe handles card payments securely and returns success callback
+
+#### 📥 Step 4: Overview & Download
+
+* Once processing is complete, the user sees a summary of:
+
+  * Net Total
+  * VAT Amount
+  * Gross Total by country
+* Users can download:
+
+  * VAT Report
+  * Summary Report
+  * (Manual review file if applicable)
+
+---
+
+### **5. Manual Review Handling**
+
+If the system cannot find VAT rules or country info:
+
+* Rows are flagged as `"Not Found"`
+* User receives an email with:
+
+  * Excel report (highlighted rows)
+  * JSON-style table for flagged entries
+* Email is sent from `mailer@xtechon.com`
+
+---
+
+### **6. Security & Compliance**
+
+* Session data stored temporarily (cleared after report is downloaded)
+* No permanent storage unless extended via cloud provider (optional)
+* Stripe handles all payment security (PCI-compliant)
+* Excel reports are generated in-memory and emailed or downloaded directly
+
+---
+
+### **7. Developer Setup**
+
+#### Backend:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install dependencies
+pip install fastapi uvicorn pandas openpyxl stripe
+
+# Run server
+uvicorn main:app --reload
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Frontend:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install and run frontend
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Folder Structure:
 
-## Learn More
+```
+qhuube/
+├── backend/
+│   ├── main.py
+│   ├── routes/
+│   └── utils/
+├── frontend/
+│   ├── pages/
+│   ├── components/
+│   └── styles/
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### **8. Known Limitations**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* No multi-user sessions yet (per-session memory)
+* VAT rules not cached (subject to real-time lookup latency)
+* Currently supports EU VAT OSS — IOSS and MOSS support in progress
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### **9. Contact Info**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For questions, bugs, or access:
+
+* **Tech Team**: [devs@qhuube.com](mailto:devs@qhuube.com)
+* **Compliance Help**: [vat-support@qhuube.com](mailto:vat-support@qhuube.com)
+
