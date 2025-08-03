@@ -851,7 +851,7 @@ async def download_vat_report(session_id: str, background_tasks: BackgroundTasks
 
                 background_tasks.add_task(
                     send_manual_vat_email,
-                    "anandpandey1765@gmail.com",
+                    "mailer@xtechon.com",
                     user_email,
                     final_manual_email_stream.getvalue(),
                     manual_review_rows  # ✅ Now safely serializable
