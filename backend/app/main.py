@@ -1,7 +1,7 @@
 from itertools import product
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth, file_upload, header, product
+from app.routes import auth, file_upload, header, product, currency
 from app.core import validate_file
 
 app = FastAPI(title="Qhuube Tax Compliance")
@@ -11,6 +11,7 @@ app.include_router(file_upload.router, prefix="/api/v1", tags=["File Upload"])
 app.include_router(header.router, prefix="/api/v1", tags=["Header"])
 app.include_router(product.router, prefix="/api/v1", tags=["Product"])
 app.include_router(validate_file.router, prefix="/api/v1", tags=["File Validation"])
+app.include_router(currency.router, prefix="/api/v1", tags=["Currency Rates"])
 
 
 app.add_middleware(
