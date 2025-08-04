@@ -131,7 +131,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
       const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/validate-file`, formData, {
         headers: { Accept: "application/json" },
-        timeout: 30000,
       })
 
       console.log("Validation Result:", response.data)
