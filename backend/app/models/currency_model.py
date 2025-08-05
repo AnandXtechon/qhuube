@@ -15,10 +15,10 @@ async def fetch_two_years_ecb_rates():
     
     # Major currencies that ECB provides data for
     major_currencies = [
-        "USD", "GBP", "JPY", "CHF", "CAD", "AUD", "SEK", "NOK", "DKK",
-        "PLN", "CZK", "HUF", "BGN", "HRK", "RON", "TRY", "RUB", "INR",
-        "BRL", "CNY", "KRW", "SGD", "HKD", "MXN", "ZAR", "THB", "MYR",
-        "IDR", "PHP", "ILS", "NZD"
+        "USD", "JPY", "BGN", "CZK", "DKK", "GBP", "HUF", "PLN", "RON",
+        "SEK", "CHF", "ISK", "NOK", "TRY", "AUD", "BRL", "CAD", "CNY",
+        "HKD", "IDR", "ILS", "INR", "KRW", "MXN", "MYR", "NZD", "PHP",
+        "SGD", "THB", "ZAR"
     ]
     
     headers = {"Accept": "application/vnd.sdmx.data+json;version=1.0.0-wd"}

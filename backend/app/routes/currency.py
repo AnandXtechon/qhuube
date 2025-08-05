@@ -94,9 +94,27 @@ async def daily_live_currency_sync():
 
             url = f"{ECB_BASE_URL.format(currency=currency_code)}?startPeriod={from_date}&endPeriod={to_date}"
             async with httpx.AsyncClient(timeout=15.0) as client:
-                res = await client.get(url, headers=HEADERS)
-                res.raise_for_status()
-                data = res.json()
+                try:
+                    res = await client.get(url, headers=HEADERS)
+                    res.raise_for_status()
+
+                    if not res.content:
+                        logs.append(f"{currency_code}: Empty response from ECB.")
+                        all_failed += 1
+                        continue
+
+                    content_type = res.headers.get("Content-Type", "")
+                    if not ("application/json" in content_type or content_type.startswith("application/vnd.sdmx.data+json")):
+                        logs.append(f"{currency_code}: Unexpected content type: {res.headers.get('Content-Type')}")
+                        all_failed += 1
+                        continue
+
+                    data = res.json()
+
+                except Exception as e:
+                    logs.append(f"{currency_code}: Failed due to {str(e)}")
+                    all_failed += 1
+                    continue
 
             series_data = data["dataSets"][0].get("series", {})
             date_values = data["structure"]["dimensions"]["observation"][0]["values"]
