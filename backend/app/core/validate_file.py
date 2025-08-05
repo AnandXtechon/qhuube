@@ -1,5 +1,6 @@
 from io import BytesIO
 import io
+import zipfile
 from typing import List, Dict, Any
 import pandas as pd
 from fastapi import BackgroundTasks, Form, UploadFile, HTTPException, APIRouter, File
@@ -7,8 +8,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from app.models.header_model import get_all_headers
 from app.models.product_model import get_all_products
 from app.core.helper import rename_columns_with_labels, safe_float, safe_round, dataframe_to_json_safe, get_user_friendly_dtype, TYPE_MAP
-from app.core.currency_conversion import get_ecb_fx_rates, get_fx_rate_for_date
-from app.core.send_mail import send_manual_vat_email
+from app.core.currency_conversion import get_ecb_fx_rates_from_db, get_fx_rate_by_date_from_db_rates
+from app.core.send_mail import send_manual_vat_email, send_vat_report_email_safely
 from openpyxl.styles import PatternFill, Font
 from openpyxl import Workbook, load_workbook
 import re
@@ -368,8 +369,7 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> tuple:
         debug_info = []
         
         # 5. Fetch ECB currency rates for conversion
-        ecb_rates = await get_ecb_fx_rates()
-        
+        ecb_rates = await get_ecb_fx_rates_from_db()
         # Track rows that need manual review
         manual_review_rows = []
                 
@@ -392,7 +392,7 @@ async def enrich_dataframe_with_vat(df: pd.DataFrame) -> tuple:
                 fx_rate = None
                 if currency != "EUR" and order_date:
                     order_date_str = pd.to_datetime(order_date).strftime('%Y-%m-%d')
-                    fx_rate = get_fx_rate_for_date(ecb_rates, order_date_str, currency)
+                    fx_rate = get_fx_rate_by_date_from_db_rates(ecb_rates, order_date_str, currency)
                     if fx_rate:
                         net_price = safe_round(net_price / fx_rate, 2)
                         shipping_amount = safe_round(shipping_amount / fx_rate, 2)
@@ -871,14 +871,18 @@ async def download_vat_report(session_id: str, background_tasks: BackgroundTasks
             if "order date" in col.lower() and pd.api.types.is_datetime64_any_dtype(enriched_df[col]):
                 enriched_df[col] = enriched_df[col].dt.strftime("%d-%m-%Y")
 
-        download_excel_stream = io.BytesIO()
-        with pd.ExcelWriter(download_excel_stream, engine='openpyxl') as writer:
-            enriched_df.to_excel(writer, index=False, sheet_name="VAT Report")
-            summary_df.to_excel(writer, index=False, sheet_name="Summary")
+        # Create in-memory files for each report
+        vat_report_stream = io.BytesIO()
+        summary_stream = io.BytesIO()
+        zip_stream = io.BytesIO()
 
+        # Create VAT Report Excel
+        with pd.ExcelWriter(vat_report_stream, engine='openpyxl') as writer:
+            enriched_df.to_excel(writer, index=False, sheet_name="VAT Report")
             workbook = writer.book
             vat_report_sheet = writer.sheets["VAT Report"]
-
+            
+            # Add summary at the bottom of VAT Report
             start_row = enriched_df.shape[0] + 3
             vat_report_sheet.cell(row=start_row, column=5, value="Overall Net Total")
             vat_report_sheet.cell(row=start_row + 1, column=5, value=vat_summary["overall_net_price"])
@@ -886,31 +890,46 @@ async def download_vat_report(session_id: str, background_tasks: BackgroundTasks
             vat_report_sheet.cell(row=start_row + 1, column=13, value=vat_summary["overall_vat_amount"])
             vat_report_sheet.cell(row=start_row, column=14, value="Overall Gross Total")
             vat_report_sheet.cell(row=start_row + 1, column=14, value=vat_summary["overall_gross_total"])
+            
+            # Apply formatting
+            for row in vat_report_sheet.iter_rows():
+                for cell in row:
+                    cell.font = Font(name='Calibri', size=12, bold=False)
 
-        download_excel_stream.seek(0)
-        workbook = load_workbook(download_excel_stream)
+        # Create Summary Excel
+        with pd.ExcelWriter(summary_stream, engine='openpyxl') as writer:
+            summary_df.to_excel(writer, index=False, sheet_name="Summary")
+            workbook = writer.book
+            summary_sheet = writer.sheets["Summary"]
+            
+            # Apply formatting
+            for row in summary_sheet.iter_rows():
+                for cell in row:
+                    cell.font = Font(name='Calibri', size=12, bold=False)
 
-        for sheet_name in ["VAT Report", "Summary"]:
-            if sheet_name in workbook.sheetnames:
-                sheet = workbook[sheet_name]
-                for row in sheet.iter_rows():
-                    for cell in row:
-                        cell.font = Font(name='Calibri', size=12, bold=False)
+        # Reset streams to beginning
+        vat_report_stream.seek(0)
+        summary_stream.seek(0)
 
-        final_download_stream = io.BytesIO()
-        workbook.save(final_download_stream)
-        final_download_stream.seek(0)
+        # Create a zip file containing both reports
+        base_name = file_name.rsplit('.', 1)[0]
+        vat_report_name = f"{base_name}_VAT_Report.xlsx"
+        summary_name = f"{base_name}_Summary.xlsx"
+        zip_name = f"{base_name}_VAT_Reports.zip"
 
-        print("Manual Df is empty", manual_df.empty)
-        download_name = file_name.rsplit('.', 1)[0] + "_vat_report.xlsx"
+        with zipfile.ZipFile(zip_stream, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr(vat_report_name, vat_report_stream.getvalue())
+            zipf.writestr(summary_name, summary_stream.getvalue())
 
-        if session_id in processed_data_store:
-            del processed_data_store[session_id]
+        zip_stream.seek(0)
+
+        # if session_id in processed_data_store:
+        #     del processed_data_store[session_id]
 
         return StreamingResponse(
-            final_download_stream,
-            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            headers={"Content-Disposition": f"attachment; filename={download_name}"}
+            zip_stream,
+            media_type='application/zip',
+            headers={"Content-Disposition": f"attachment; filename={zip_name}"}
         )
 
     except HTTPException as he:
@@ -921,3 +940,79 @@ async def download_vat_report(session_id: str, background_tasks: BackgroundTasks
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Could not generate download: {str(e)}")
+
+@router.post("/send-vat-report-email/{session_id}")
+async def send_vat_report_email(session_id: str, background_tasks: BackgroundTasks, user_email: str = Form(...), file_name: str = Form(...)):
+    try:
+        # First check session validity
+        if session_id not in processed_data_store:
+            raise HTTPException(status_code=404, detail="Session not found or expired")
+        
+        stored_data = processed_data_store[session_id]
+        df = stored_data['original_df'].copy()
+        print(f"Preparing to send VAT report to {user_email}")
+        
+        # Process the VAT data
+        result = await enrich_dataframe_with_vat(df)
+                
+        # Check if manual review is required
+        if isinstance(result, dict) and result.get("status") == "manual_review_required":
+            return {
+                "status": "error",
+                "message": "This file requires manual review and cannot be processed automatically."
+            }
+            
+        # Process successful VAT report
+        enriched_df, summary_df, manual_df, vat_summary = result
+        
+        # Format dates
+        for col in enriched_df.columns:
+            if "order date" in col.lower() and pd.api.types.is_datetime64_any_dtype(enriched_df[col]):
+                enriched_df[col] = enriched_df[col].dt.strftime("%d-%m-%Y")
+        
+        # Create in-memory files for reports
+        vat_report_stream = io.BytesIO()
+        summary_stream = io.BytesIO()
+        
+        # Create VAT Report Excel
+        with pd.ExcelWriter(vat_report_stream, engine='openpyxl') as writer:
+            enriched_df.to_excel(writer, index=False, sheet_name="VAT Report")
+            # ... (rest of the VAT report generation code)
+        
+        # Create Summary Excel
+        with pd.ExcelWriter(summary_stream, engine='openpyxl') as writer:
+            summary_df.to_excel(writer, index=False, sheet_name="Summary")
+        
+        # Create zip file
+        base_name = file_name.rsplit('.', 1)[0] if '.' in file_name else file_name
+        zip_name = f"{base_name}_VAT_Reports.zip"
+                
+        zip_stream = io.BytesIO()
+        with zipfile.ZipFile(zip_stream, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr(f"{base_name}_VAT_Report.xlsx", vat_report_stream.getvalue())
+            zipf.writestr(f"{base_name}_Summary.xlsx", summary_stream.getvalue())
+        
+        zip_stream.seek(0)
+        zip_content = zip_stream.getvalue()
+        
+        # Send email in background task WITHOUT raising exceptions
+        background_tasks.add_task(
+            send_vat_report_email_safely,  # Changed to the safe version
+            user_email,
+            zip_name,
+            zip_content,
+            file_name
+        )
+        
+        return {
+            "status": "success", 
+            "message": f"VAT report has been sent to {user_email}"
+        }
+    except HTTPException as he:
+        print(f"HTTPException in send_vat_report_email: {he.detail}")
+        raise he
+    except Exception as e:
+        print(f"Unhandled exception in send_vat_report_email: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Could not send email: {str(e)}")

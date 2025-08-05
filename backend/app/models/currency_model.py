@@ -11,7 +11,7 @@ async def fetch_two_years_ecb_rates():
     Uses individual requests for each major currency to avoid API limitations
     """
     start_date = "2023-01-01"
-    end_date = "2025-08-04"
+    end_date = "2025-07-01"
     
     # Major currencies that ECB provides data for
     major_currencies = [
@@ -157,7 +157,7 @@ async def process_currency_data(data, expected_currency=None):
                                 currency_code=currency_code,
                                 currency_name=currency_name,
                                 convert_to_currency="EUR",
-                                value=round(1 / rate, 6),
+                                value=round(rate, 6),
                             )
                             documents.append(doc.model_dump())
                     except (ValueError, IndexError, ZeroDivisionError):

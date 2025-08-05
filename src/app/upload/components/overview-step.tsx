@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
@@ -6,8 +7,6 @@ import {
   FileText,
   Download,
   CheckCircle,
-  TrendingUp,
-  Calendar,
   Mail,
   FileSpreadsheet,
   FileTextIcon,
@@ -23,17 +22,23 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { useUploadStore } from "@/store/uploadStore"
 import ManualReviewPopup from "./manual-review-popup"
+import JSZip from "jszip"
+import { saveAs } from "file-saver"
+import axios from "axios"
 
 interface OverviewStepProps {
   onPrevious: () => void
-  correctedData?: any[]
 }
 
-export default function OverviewStep({ onPrevious, correctedData }: OverviewStepProps) {
+export default function OverviewStep({ onPrevious }: OverviewStepProps) {
   const { uploadedFiles, setUploadedFiles, sessionIds } = useUploadStore()
-  const [email, setEmail] = useState("")
-  const [isEmailSending, setIsEmailSending] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
+
+  // Email for sending reports to users
+  const [reportEmail, setReportEmail] = useState("")
+  const [isReportEmailSending, setIsReportEmailSending] = useState(false)
+  const [reportEmailSent, setReportEmailSent] = useState(false)
+
+  // Download states
   const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(new Set())
   const [isDownloadingAll, setIsDownloadingAll] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState(0)
@@ -43,281 +48,361 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
   const [currentManualReviewFile, setCurrentManualReviewFile] = useState<string>("")
   const [manualReviewCount, setManualReviewCount] = useState(0)
 
-  const totalAmount = correctedData?.reduce((sum, row) => sum + row.amount, 0) || 15420.75
-  const totalVAT = correctedData?.reduce((sum, row) => sum + (row.amount * row.vatRate) / 100, 0) || 2456.32
-  const processedRecords = correctedData?.length || 125
-
   const router = useRouter()
 
   const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
   }
 
-  const handleManualReviewEmailSubmit = async () => {
-    if (!email || !isValidEmail(email)) {
-      toast.error("Please enter a valid email address")
-      return
+  const handleManualReviewEmailSubmit = async (adminEmail: string) => {
+    if (!adminEmail) {
+      toast.error("Please enter a valid email address");
+      return;
     }
-
-    const sessionId = sessionIds[currentManualReviewFile]
+  
+    const sessionId = sessionIds[currentManualReviewFile];
     if (!sessionId) {
-      toast.error("Session not found for this file")
-      return
+      toast.error("Session not found for this file");
+      return;
     }
-
-    const formData = new FormData()
-    formData.append("user_email", email)
-
+  
+    const formData = new FormData();
+    formData.append("user_email", adminEmail);
+  
     try {
-      setIsEmailSending(true)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`, {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const contentType = response.headers.get("content-type")
-        let errorMessage = "Manual review email submission failed"
-        if (contentType && contentType.includes("application/json")) {
-          const errorJson = await response.json()
-          errorMessage = errorJson.detail || errorMessage
-        } else {
-          errorMessage = `HTTP error! status: ${response.status}`
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`,
+        formData,
+        {
+          responseType: "blob",
         }
-        throw new Error(errorMessage)
+      );
+  
+      const contentType = response.headers["content-type"];
+  
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Unexpected response format from server");
       }
-
-      const jsonResponse = await response.json()
+  
+      const text = await response.data.text(); // read blob as text
+      const jsonResponse = JSON.parse(text);
+  
       if (jsonResponse.status === "manual_review_required") {
-        setEmailSent(true)
-        toast.success(jsonResponse.message)
-      } else {
-        setEmailSent(true)
+        setReportEmailSent(true);
         toast.success(
-          `Manual review request submitted! You'll receive the VAT report for ${currentManualReviewFile} within 24 hours.`,
-        )
-      }
-
-      setShowManualReviewPopup(false)
-      setCurrentManualReviewFile("")
-      setManualReviewCount(0)
-    } catch (error: any) {
-      console.error("Failed to submit manual review email:", error)
-      toast.error(`Failed to submit manual review request: ${error.message || "Please try again."}`)
-    } finally {
-      setIsEmailSending(false)
-    }
-  }
-
-  async function downloadVatReportForFile(fileName: string) {
-    setDownloadingFiles((prev) => new Set(prev).add(fileName))
-    try {
-      const sessionId = sessionIds[fileName]
-      if (!sessionId) {
-        toast.error("Session not found for this file")
-        return
-      }
-
-      const formData = new FormData()
-      formData.append("user_email", email)
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`, {
-        method: "POST",
-        body: formData,
-      })
-
-      const contentType = response.headers.get("content-type")
-      if (!response.ok) {
-        let errorMessage = `HTTP error! status: ${response.status}`
-        if (contentType && contentType.includes("application/json")) {
-          const errorJson = await response.json()
-          errorMessage = errorJson.detail || errorMessage
-        }
-        console.error("Download failed", errorMessage)
-        toast.error(`Failed to download VAT report: ${errorMessage}`)
-        return
-      }
-
-      // If response is OK, check content type to decide how to read
-      if (contentType && contentType.includes("application/json")) {
-        const jsonResponse = await response.json()
-        if (jsonResponse.status === "manual_review_required") {
-          setCurrentManualReviewFile(fileName)
-          setManualReviewCount(jsonResponse.manual_review_count || 1)
-          setShowManualReviewPopup(true)
-          return
-        } else if (jsonResponse.status === "manual_review_initiated") {
-          toast.success(jsonResponse.message)
-          return
-        }
-        console.warn("Unexpected JSON response:", jsonResponse)
-        toast.error("Received unexpected response from server.")
-        return
+          `Manual review request submitted! You'll receive the VAT report for ${currentManualReviewFile} within 24 hours.`
+        );
       } else {
-        // Assume it's a blob for download
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement("a")
-        link.href = url
-        link.download = fileName.replace(/\.[^.]+$/, "") + "_vat_report.xlsx"
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-        toast.success("VAT report downloaded successfully")
+        toast.warning("Unexpected response from server.");
       }
+  
+      setShowManualReviewPopup(false);
+      setCurrentManualReviewFile("");
+      setManualReviewCount(0);
+    } catch (error: any) {
+      console.error("Failed to submit manual review email:", error);
+  
+      const errorMessage =
+        error?.response?.data?.detail ||
+        error?.message ||
+        "Please try again.";
+  
+      toast.error(`Failed to submit manual review request: ${errorMessage}`);
+      throw error;
+    }
+  };
+
+  const downloadVatReportForFile = async (fileName: string) => {
+    setDownloadingFiles((prev) => new Set(prev).add(fileName));
+  
+    try {
+      const sessionId = sessionIds[fileName];
+      if (!sessionId) {
+        toast.error("Session not found for this file");
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append("user_email", "");
+  
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`,
+        formData,
+        {
+          responseType: "blob",
+        }
+      );
+  
+      const contentType = response.headers["content-type"];
+  
+      // Handle manual review response (JSON inside blob)
+      if (contentType?.includes("application/json")) {
+        const text = await response.data.text();
+        const json = JSON.parse(text);
+  
+        if (json.status === "manual_review_required") {
+          setCurrentManualReviewFile(fileName);
+          setManualReviewCount(json.manual_review_count || 1);
+          setShowManualReviewPopup(true);
+          return;
+        } else if (json.status === "manual_review_initiated") {
+          toast.success(json.message);
+          return;
+        } else {
+          console.warn("Unexpected JSON response:", json);
+          toast.error("Received unexpected response from server.");
+          return;
+        }
+      }
+  
+      // Handle ZIP download
+      if (contentType?.includes("application/zip")) {
+        const zip = await JSZip.loadAsync(response.data);
+        const zipFiles = Object.keys(zip.files);
+  
+        for (const file of zipFiles) {
+          const fileData = await zip.file(file)?.async("blob");
+          if (fileData) {
+            saveAs(fileData, file);
+          }
+        }
+  
+        toast.success("VAT reports extracted and downloaded successfully");
+        return;
+      }
+  
+      // Handle regular Excel file
+      const cd = response.headers["content-disposition"];
+      let filename = fileName.replace(/\.[^.]+$/, "") + "_vat_report.xlsx";
+  
+      if (cd) {
+        const match = cd.match(/filename="?([^";]+)"?/i);
+        if (match) filename = match[1];
+      }
+  
+      saveAs(response.data, filename);
+      toast.success("VAT report downloaded successfully");
     } catch (err: any) {
-      console.error("Download failed", err)
-      toast.error(`Failed to download VAT report: ${err.message || "Please try again."}`)
+      console.error("Download failed", err);
+      const errorMessage =
+        err?.response?.data?.detail || err.message || "Please try again.";
+      toast.error(`Failed to download VAT report: ${errorMessage}`);
     } finally {
       setDownloadingFiles((prev) => {
-        const newSet = new Set(prev)
-        newSet.delete(fileName)
-        return newSet
-      })
+        const newSet = new Set(prev);
+        newSet.delete(fileName);
+        return newSet;
+      });
     }
-  }
+  };
 
-  // Download all files function with manual review handling
   const handleDownloadAllReports = async () => {
     if (uploadedFiles.length === 0) {
-      toast.error("No files available for download")
-      return
+      toast.error("No files available for download");
+      return;
     }
-
-    setIsDownloadingAll(true)
-    setDownloadProgress(0)
-    toast.info(`Starting download of ${uploadedFiles.length} VAT reports...`)
-
-    let completedCount = 0
-    const totalFiles = uploadedFiles.length
-
+  
+    setIsDownloadingAll(true);
+    setDownloadProgress(0);
+    toast.info(`Starting download of ${uploadedFiles.length} VAT reports...`);
+  
+    const totalFiles = uploadedFiles.length;
+    let completedCount = 0;
+  
     const downloadPromises = uploadedFiles.map(async (fileMeta) => {
-      const sessionId = sessionIds[fileMeta.name]
+      const fileName = fileMeta.name;
+      const sessionId = sessionIds[fileName];
+  
       if (!sessionId) {
-        console.warn(`Skipping ${fileMeta.name} - no session ID found`)
-        completedCount++
-        setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
-        return { success: false, filename: fileMeta.name, error: "No session ID", requiresManualReview: false }
-      }
-
-      try {
-        const formData = new FormData()
-        formData.append("user_email", email)
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`, {
-          method: "POST",
-          body: formData,
-        })
-
-        const contentType = response.headers.get("content-type")
-        if (!response.ok) {
-          let errorMessage = `HTTP error! status: ${response.status}`
-          if (contentType && contentType.includes("application/json")) {
-            const errorJson = await response.json()
-            errorMessage = errorJson.detail || errorMessage
-          }
-          console.error(`Download failed for ${fileMeta.name}:`, errorMessage)
-          completedCount++
-          setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
-          return { success: false, filename: fileMeta.name, error: errorMessage, requiresManualReview: false }
-        }
-
-        if (contentType && contentType.includes("application/json")) {
-          const jsonResponse = await response.json()
-          if (jsonResponse.status === "manual_review_required") {
-            completedCount++
-            setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
-            return {
-              success: false,
-              filename: fileMeta.name,
-              requiresManualReview: true,
-              manualReviewCount: jsonResponse.manual_review_count || 1,
-            }
-          } else if (jsonResponse.status === "manual_review_initiated") {
-            toast.success(jsonResponse.message)
-            completedCount++
-            setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
-            return { success: true, filename: fileMeta.name, requiresManualReview: false }
-          }
-          console.warn(`Unexpected JSON response for ${fileMeta.name}:`, jsonResponse)
-          completedCount++
-          setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
-          return {
-            success: false,
-            filename: fileMeta.name,
-            error: "Unexpected JSON response",
-            requiresManualReview: false,
-          }
-        } else {
-          // Normal download flow (blob)
-          const blob = await response.blob()
-          const cd = response.headers.get("Content-Disposition")
-          let filename = "vat_report.xlsx"
-          if (cd) {
-            const match = cd.match(/filename="?([^";]+)"?/)
-            if (match) filename = match[1]
-          } else {
-            filename = fileMeta.name.replace(/\.[^.]+$/, "") + "_vat_report.xlsx"
-          }
-
-          const url = window.URL.createObjectURL(blob)
-          const link = document.createElement("a")
-          link.href = url
-          link.download = filename
-          document.body.appendChild(link)
-          link.click()
-          link.remove()
-          window.URL.revokeObjectURL(url)
-
-          completedCount++
-          setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
-          return { success: true, filename: fileMeta.name, requiresManualReview: false }
-        }
-      } catch (error: any) {
-        console.error(`Download failed for ${fileMeta.name}:`, error)
-        completedCount++
-        setDownloadProgress(Math.round((completedCount / totalFiles) * 100))
+        console.warn(`Skipping ${fileName} - no session ID found`);
+        completedCount++;
+        setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
         return {
           success: false,
-          filename: fileMeta.name,
-          error: error.message || "Unknown error",
+          filename: fileName,
+          error: "No session ID",
           requiresManualReview: false,
-        }
+        };
       }
-    })
-
-    const results = await Promise.all(downloadPromises)
-    const successful = results.filter((r) => r?.success).length
-    const failed = results.filter((r) => r && !r.success && !r.requiresManualReview).length
-    const manualReview = results.filter((r) => r && r.requiresManualReview).length
-
+  
+      try {
+        const formData = new FormData();
+        formData.append("user_email", "");
+  
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`,
+          formData,
+          {
+            responseType: "blob", // must for file downloads
+          }
+        );
+  
+        const contentType = response.headers["content-type"];
+  
+        // Handle manual review JSON response
+        if (contentType?.includes("application/json")) {
+          const text = await response.data.text();
+          const json = JSON.parse(text);
+  
+          if (json.status === "manual_review_required") {
+            completedCount++;
+            setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
+            return {
+              success: false,
+              filename: fileName,
+              requiresManualReview: true,
+              manualReviewCount: json.manual_review_count || 1,
+            };
+          }
+  
+          completedCount++;
+          setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
+          return {
+            success: false,
+            filename: fileName,
+            error: "Unexpected JSON response",
+            requiresManualReview: false,
+          };
+        }
+  
+        // Handle ZIP response
+        if (contentType?.includes("application/zip")) {
+          const zip = await JSZip.loadAsync(response.data);
+          const zipFiles = Object.keys(zip.files);
+  
+          for (const zipFile of zipFiles) {
+            const fileData = await zip.file(zipFile)?.async("blob");
+            if (fileData) saveAs(fileData, zipFile);
+          }
+  
+          completedCount++;
+          setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
+          return { success: true, filename: fileName, requiresManualReview: false };
+        }
+  
+        // Handle Excel (xlsx or other single file)
+        const cd = response.headers["content-disposition"];
+        let downloadName = "vat_report.xlsx";
+  
+        if (cd) {
+          const match = cd.match(/filename="?([^";]+)"?/i);
+          if (match) downloadName = match[1];
+        } else {
+          downloadName = fileName.replace(/\.[^.]+$/, "") + "_vat_report.xlsx";
+        }
+  
+        saveAs(response.data, downloadName);
+  
+        completedCount++;
+        setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
+        return { success: true, filename: fileName, requiresManualReview: false };
+      } catch (error: any) {
+        console.error(`Download failed for ${fileName}:`, error);
+        completedCount++;
+        setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
+  
+        return {
+          success: false,
+          filename: fileName,
+          error: error?.response?.data || error.message || "Unknown error",
+          requiresManualReview: false,
+        };
+      }
+    });
+  
+    const results = await Promise.all(downloadPromises);
+  
+    const successful = results.filter((r) => r?.success).length;
+    const failed = results.filter((r) => r && !r.success && !r.requiresManualReview).length;
+    const manualReview = results.filter((r) => r?.requiresManualReview).length;
+  
+    // Final toast messages
     if (successful === uploadedFiles.length) {
-      toast.success(`Successfully downloaded all ${successful} VAT reports!`)
+      toast.success(`Successfully downloaded all ${successful} VAT reports!`);
     } else if (successful > 0) {
-      let message = `Downloaded ${successful} reports successfully`
-      if (failed > 0) message += `, ${failed} failed`
-      if (manualReview > 0) message += `, ${manualReview} require manual review`
-      toast.warning(message)
+      let message = `Downloaded ${successful} reports successfully`;
+      if (failed > 0) message += `, ${failed} failed`;
+      if (manualReview > 0) message += `, ${manualReview} require manual review`;
+      toast.warning(message);
     } else if (manualReview > 0) {
-      toast.info(`${manualReview} files require manual review. You'll be contacted within 24 hours.`)
+      toast.info(`${manualReview} file(s) require manual review. You'll be contacted within 24 hours.`);
     } else {
-      toast.error("Failed to download any reports")
+      toast.error("Failed to download any reports");
     }
+  
+    setIsDownloadingAll(false);
+    setDownloadProgress(0);
+  };
 
-    setIsDownloadingAll(false)
-    setDownloadProgress(0)
-  }
-
-  const handleSendEmail = async () => {
-    if (!email) return
-    setIsEmailSending(true)
-    // Simulate email sending
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsEmailSending(false)
-    setEmailSent(true)
-    toast.success("Email sent successfully")
-  }
+  const handleSendReportEmail = async () => {
+    if (!reportEmail || !isValidEmail(reportEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+  
+    setIsReportEmailSending(true);
+  
+    try {
+      const fileSessions = uploadedFiles
+        .map(file => ({
+          fileName: file.name,
+          sessionId: sessionIds[file.name],
+        }))
+        .filter(session => session.sessionId);
+  
+      if (fileSessions.length === 0) {
+        toast.error("No valid sessions found for the uploaded files");
+        return;
+      }
+  
+      const results = await Promise.all(
+        fileSessions.map(async ({ fileName, sessionId }) => {
+          try {
+            const formData = new FormData();
+            formData.append("user_email", reportEmail);
+            formData.append("file_name", fileName);
+  
+            const response = await axios.post(
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/send-vat-report-email/${sessionId}`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+  
+            return { success: true, fileName };
+          } catch (error: any) {
+            console.error(`Failed to send ${fileName}:`, error);
+  
+            const errorMsg =
+              error?.response?.data?.detail ||
+              error?.message ||
+              `Unknown error sending ${fileName}`;
+  
+            return { success: false, fileName, error: errorMsg };
+          }
+        })
+      );
+  
+      const successful = results.filter(r => r.success).length;
+      const failed = results.length - successful;
+  
+      if (successful > 0) {
+        toast.success(`Successfully sent ${successful} report(s) to ${reportEmail}`);
+      }
+  
+      if (failed > 0) {
+        toast.warning(`Failed to send ${failed} report(s). Please try downloading them instead.`);
+      }
+    } catch (error: any) {
+      console.error("Failed to send email:", error);
+      toast.error(`Failed to send email: ${error?.message || "Please try again later"}`);
+    } finally {
+      setIsReportEmailSending(false);
+    }
+  };
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName?.split(".").pop()?.toLowerCase()
@@ -334,23 +419,18 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
   }
 
   // If email is sent successfully, show only confirmation message and navigation
-  if (emailSent) {
+  if (reportEmailSent) {
     return (
       <div className="py-10 mt-20 xl:mt-28 bg-white">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Success Message */}
           <div className="rounded-xl border border-gray-100 p-6 text-center mb-10">
             <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
-            <h3 className="text-xl font-semibold text-green-800 mb-2">
-              Email Sent Successfully!
-            </h3>
+            <h3 className="text-xl font-semibold text-green-800 mb-2">Email Sent Successfully!</h3>
             <p className="text-green-700 mb-1">
-              Your VAT compliance reports will be sent to{" "}
-              <span className="font-medium">{email}</span> shortly.
+              Your VAT compliance reports will be sent to <span className="font-medium">{reportEmail}</span> shortly.
             </p>
-            <p className="text-green-600 text-sm">
-              Please check your inbox and spam folder for the email.
-            </p>
+            <p className="text-green-600 text-sm">Please check your inbox and spam folder for the email.</p>
           </div>
 
           {/* Navigation Buttons */}
@@ -376,7 +456,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
     )
   }
 
-
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 mt-16 xl:mt-4">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
@@ -390,71 +469,10 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
             </p>
           </div>
 
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 lg:mb-8">
-            {/* Records Processed */}
-            <Card className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow">
-              <CardContent className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6">
-                <div className="rounded-full bg-blue-100 p-2 sm:p-3 flex-shrink-0">
-                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-gray-500 mb-1">Records Processed</div>
-                  <div className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">{processedRecords}</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Total Amount */}
-            <Card className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow">
-              <CardContent className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6">
-                <div className="rounded-full bg-green-100 p-2 sm:p-3 flex-shrink-0">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-gray-500 mb-1">Total Amount</div>
-                  <div className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
-                    €{totalAmount.toFixed(0)}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Total VAT */}
-            <Card className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow">
-              <CardContent className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6">
-                <div className="rounded-full bg-red-100 p-2 sm:p-3 flex-shrink-0">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-gray-500 mb-1">Total VAT</div>
-                  <div className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
-                    €{totalVAT.toFixed(0)}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Processed Date */}
-            <Card className="border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow">
-              <CardContent className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6">
-                <div className="rounded-full bg-purple-100 p-2 sm:p-3 flex-shrink-0">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-gray-500 mb-1">Processed Date</div>
-                  <div className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
-                    {new Date().toLocaleDateString()}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8 lg:px-10">
             {/* Files Processed */}
-            <Card className="border border-gray-200 shadow-sm rounded-xl">
+            <Card className="border border-gray-200 shadow-md rounded-xl">
               <CardContent className="p-4 sm:p-6">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2 text-base sm:text-lg">
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -487,7 +505,7 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
             </Card>
 
             {/* Download & Email */}
-            <Card className="border border-gray-200 shadow-sm rounded-xl">
+            <Card className="border border-gray-200 shadow-md rounded-xl">
               <CardContent className="p-4 sm:p-6">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2 text-base sm:text-lg">
                   <Download className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -496,7 +514,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
 
                 {/* Download Buttons */}
                 <div className="space-y-4 mb-6">
-                  {/* Download All Reports Button */}
                   {uploadedFiles.length > 0 && (
                     <div className="space-y-3">
                       <Button
@@ -506,35 +523,16 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
                       >
                         {isDownloadingAll ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             Downloading All Reports...
                           </>
                         ) : (
                           <>
-                            <Package className="w-5 h-5 mr-2" />
+                            <Package className="w-5 h-5" />
                             Download All VAT Reports ({uploadedFiles.length})
                           </>
                         )}
                       </Button>
-
-                      {/* Progress indicator when downloading all */}
-                      {isDownloadingAll && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between text-sm text-blue-800 mb-2">
-                            <span className="font-medium">Download Progress</span>
-                            <span>{Math.round(downloadProgress)}%</span>
-                          </div>
-                          <div className="bg-blue-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                              style={{ width: `${downloadProgress}%` }}
-                            />
-                          </div>
-                          <p className="text-xs text-blue-700 mt-2">
-                            Processing {uploadedFiles.length} files... Please wait.
-                          </p>
-                        </div>
-                      )}
 
                       {/* Divider */}
                       <div className="relative">
@@ -555,14 +553,17 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
                             onClick={() => downloadVatReportForFile(fileMeta.name)}
                             disabled={downloadingFiles.has(fileMeta.name) || isDownloadingAll}
                             variant="outline"
-                            className="w-full justify-start h-10 text-sm bg-white hover:bg-gray-50"
+                            className="w-full h-10 px-4 py-2 flex items-center justify-start text-sm bg-white hover:bg-gray-50 disabled:opacity-50"
+                            title={fileMeta.name}
                           >
                             {downloadingFiles.has(fileMeta.name) ? (
-                              <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2" />
+                              <div className="w-4 h-4 mr-2 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
                             ) : (
-                              <FileText className="w-4 h-4 mr-2" />
+                              <FileText className="w-4 h-4 mr-2 text-gray-600" />
                             )}
-                            {fileMeta.name.length > 30 ? `${fileMeta.name.substring(0, 30)}...` : fileMeta.name}
+                            <span className="truncate max-w-[80%]">
+                              {fileMeta.name.length > 30 ? `${fileMeta.name.slice(0, 30)}...` : fileMeta.name}
+                            </span>
                           </Button>
                         ))}
                       </div>
@@ -573,27 +574,30 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
                 {/* Email Section */}
                 <div className="border-t pt-4 sm:pt-6">
                   <Label
-                    htmlFor="email"
+                    htmlFor="report-email"
                     className="text-sm sm:text-base font-medium text-gray-700 flex items-center gap-2 mb-3"
                   >
                     <Mail className="w-4 h-4" />
-                    Email Reports
+                    Email Reports to User
                   </Label>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Send the processed VAT reports to a specific email address
+                  </p>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Input
-                      id="email"
+                      id="report-email"
                       type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="user@company.com"
+                      value={reportEmail}
+                      onChange={(e) => setReportEmail(e.target.value)}
                       className="flex-1 h-10 sm:h-12 text-sm sm:text-base"
                     />
                     <Button
-                      onClick={handleSendEmail}
-                      disabled={!isValidEmail(email) || isEmailSending}
+                      onClick={handleSendReportEmail}
+                      disabled={!isValidEmail(reportEmail) || isReportEmailSending}
                       className="bg-purple-600 hover:bg-purple-700 text-white h-10 sm:h-12 px-4 sm:px-6 w-full sm:w-auto"
                     >
-                      {isEmailSending ? (
+                      {isReportEmailSending ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
@@ -609,7 +613,7 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
           </div>
 
           {/* Navigation */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-10">
             <Button
               variant="outline"
               onClick={onPrevious}
@@ -640,7 +644,6 @@ export default function OverviewStep({ onPrevious, correctedData }: OverviewStep
           setManualReviewCount(0)
         }}
         onEmailSubmit={handleManualReviewEmailSubmit}
-      // isLoading={isEmailSending}
       />
     </div>
   )

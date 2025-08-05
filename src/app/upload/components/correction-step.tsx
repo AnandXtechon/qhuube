@@ -29,7 +29,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
   const [isLoading, setIsLoading] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [validationSummary, setValidationSummary] = useState<any>(null)
-  const { uploadedFiles, sessionIds } = useUploadStore()
+  const { uploadedFiles, sessionIds, setSessionIds } = useUploadStore()
 
   const totalFiles = uploadedFiles.length
   const correctedIssues = issues.filter((issue) => issue.status === "corrected").length
@@ -101,7 +101,8 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
     }
   }
 
-  const validationIssues = useCallback(async () => {
+  // Validate files and get session IDs - this now happens in correction step
+  const validateFilesAndCreateSessions = useCallback(async () => {
     if (uploadedFiles.length === 0) {
       console.log("No files to validate")
       return
@@ -125,8 +126,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
       }
 
       validFiles.forEach((fileMeta) => {
-        if (fileMeta.file)
-          formData.append("files", fileMeta.file, fileMeta.name)
+        if (fileMeta.file) formData.append("files", fileMeta.file, fileMeta.name)
       })
 
       const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/validate-file`, formData, {
@@ -135,6 +135,16 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
 
       console.log("Validation Result:", response.data)
       setValidationSummary(response.data)
+
+      // Extract session IDs from response and set them in store
+      const sessionMapping: Record<string, string> = {}
+      response.data.files?.forEach((fileResult: any) => {
+        if (fileResult.session_id) {
+          sessionMapping[fileResult.file_name] = fileResult.session_id
+        }
+      })
+      setSessionIds(sessionMapping)
+      console.log("Session IDs set:", sessionMapping)
 
       // Transform backend response to ValidationIssue format
       const transformedIssues: ValidationIssue[] = []
@@ -251,36 +261,39 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
     } finally {
       setIsLoading(false)
     }
-  }, [uploadedFiles])
+  }, [uploadedFiles, setSessionIds])
 
+  // Run validation when component mounts
   useEffect(() => {
-    validationIssues()
-  }, [validationIssues])
+    validateFilesAndCreateSessions()
+  }, [validateFilesAndCreateSessions])
 
-  async function downloadVatReportForFile(fileName: string) {
+  async function downloadCorrectionReviewFile(fileName: string) {
     try {
       const sessionId = sessionIds[fileName]
       if (!sessionId) {
         alert("Session not found for this file")
         return
       }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-issues/${sessionId}`, {
-        method: "GET",
-      })
-
-      if (!response.ok) throw new Error("Failed to download VAT report")
-
-      const blob = await response.blob()
-      const cd = response.headers.get("Content-Disposition")
-      let filename = "vat_report.xlsx"
+  
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-issues/${sessionId}`,
+        {
+          responseType: "blob",
+        }
+      )
+  
+      const blob = response.data
+      let filename = "correction_review.xlsx"
+  
+      const cd = response.headers["content-disposition"]
       if (cd) {
         const match = cd.match(/filename="?([^";]+)"?/)
         if (match) filename = match[1]
       } else {
-        filename = fileName.replace(/\.[^.]+$/, "") + "_vat_report.xlsx"
+        filename = fileName.replace(/\.[^.]+$/, "") + "_correction_review.xlsx"
       }
-
+  
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
@@ -364,7 +377,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                   <ArrowLeft className="w-4 h-4" />
                   Go Back
                 </Button>
-                <Button onClick={validationIssues}>Try Again</Button>
+                <Button onClick={validateFilesAndCreateSessions}>Try Again</Button>
               </div>
             </div>
           </div>
@@ -430,7 +443,7 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                     <Button
                       key={fileMeta.name}
                       variant="outline"
-                      onClick={() => downloadVatReportForFile(fileMeta.name)}
+                      onClick={() => downloadCorrectionReviewFile(fileMeta.name)}
                       className="flex items-center gap-2 bg-transparent"
                     >
                       <Download className="w-4 h-4" />
@@ -491,7 +504,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                         </div>
                       </div>
                     </div>
-
                     {/* Issue Details */}
                     {issue.details && (
                       <div className="bg-blue-50 p-3 rounded-lg text-xs">
@@ -518,7 +530,6 @@ export default function CorrectionStep({ onNext, onPrevious }: CorrectionStepPro
                         </div>
                       </div>
                     )}
-
                     {/* Correction */}
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="text-xs text-gray-600 mb-2">Suggested Fix:</div>
