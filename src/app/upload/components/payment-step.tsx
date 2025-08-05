@@ -40,7 +40,7 @@ const PaymentStep = ({ onPrevious, onNext }: PaymentStepProps) => {
                 },
             }
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pricing/stripe/create`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/pricing/stripe/create`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(paymentData),
