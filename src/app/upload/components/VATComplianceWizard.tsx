@@ -25,18 +25,28 @@ const VATComplianceWizard = () => {
     // Handle step navigation from URL params
     useEffect(() => {
         const stepParam = Number(searchParams.get("step"))
+        const paymentSuccess = searchParams.get("payment_success")
+    
+        // Guard: prevent access to Overview step without payment
+        if (stepParam === 4 && !paymentCompleted) {
+            // Redirect user back to Payment step
+            setCurrentStep(3)
+            router.push("/upload?step=3")
+            return
+        }
+    
+        // If valid step, allow navigation
         if (!isNaN(stepParam) && stepParam >= 1 && stepParam <= 4) {
             setCurrentStep(stepParam)
         }
-
+    
         // Handle payment return
-        const paymentSuccess = searchParams.get("payment_success")
         if (paymentSuccess === "true") {
-            // Clear payment-related localStorage
             localStorage.removeItem("pre-payment-step")
             localStorage.removeItem("payment-initiated")
         }
-    }, [searchParams])
+    }, [searchParams, paymentCompleted, router])
+    
 
     // Check for interrupted payment flow
     useEffect(() => {
