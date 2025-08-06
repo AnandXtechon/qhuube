@@ -590,19 +590,19 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
                       placeholder="user@company.com"
                       value={reportEmail}
                       onChange={(e) => setReportEmail(e.target.value)}
-                      className="flex-1 h-10 sm:h-12 text-sm sm:text-base"
+                      className="flex-1 py-2 lg:h-10 text-sm sm:text-base"
                     />
                     <Button
                       onClick={handleSendReportEmail}
                       disabled={!isValidEmail(reportEmail) || isReportEmailSending}
-                      className="bg-purple-600 hover:bg-purple-700 text-white h-10 sm:h-12 px-4 sm:px-6 w-full sm:w-auto"
+                      className="bg-purple-600 hover:bg-purple-700 text-white h-10 px-4 sm:px-6 w-full sm:w-auto"
                     >
                       {isReportEmailSending ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
                           <Mail className="w-4 h-4" />
-                          <span className="hidden sm:inline ml-2">Send</span>
+                          <span className="hidden sm:inline">Send</span>
                         </>
                       )}
                     </Button>
@@ -613,7 +613,7 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
           </div>
 
           {/* Navigation */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-10">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 lg:px-10">
             <Button
               variant="outline"
               onClick={onPrevious}

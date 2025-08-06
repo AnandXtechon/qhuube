@@ -18,7 +18,7 @@ interface StepIndicatorProps {
 
 export default function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
     return (
-        <div className="fixed top-0 left-0 right-0 z-50  bg-white">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white">
             <div className="absolute top-5 left-5 lg:left-20">
                 <div className="flex items-center">
                     <Link href="/" className="">
@@ -38,7 +38,7 @@ export default function StepIndicator({ steps, currentStep }: StepIndicatorProps
             </div>
             <div className="max-w-6xl mx-auto px-4 py-4">
                 {/* Steps */}
-                <div className="flex justify-center items-center gap-4 md:gap-2 mt-14 md:mt-14   xl:mt-4">
+                <div className="flex justify-center items-center gap-4 md:gap-2 mt-20 xl:mt-4">
                     {steps.map((step, index) => (
                         <div key={step.id} className="flex items-center">
                             {/* Step Circle & Label */}
