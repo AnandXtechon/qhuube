@@ -31,7 +31,7 @@ interface OverviewStepProps {
 }
 
 export default function OverviewStep({ onPrevious }: OverviewStepProps) {
-  const { uploadedFiles, setUploadedFiles, sessionIds } = useUploadStore()
+  const { uploadedFiles, setUploadedFiles, sessionIds, setPaymentCompleted } = useUploadStore()
 
   // Email for sending reports to users
   const [reportEmail, setReportEmail] = useState("")
@@ -415,6 +415,8 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
 
   const handleStartNewProcess = () => {
     setUploadedFiles([])
+    setReportEmail("")
+    setPaymentCompleted(false)
     router.push("/upload?step=1")
   }
 
