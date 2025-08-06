@@ -93,9 +93,9 @@ GDPR: No permanent data storage unless explicitly configured
 Audit Trail: Session logs available for 30 days (admin access)
 
 ## 📞 Support
-Technical Issues: devs@qhuube.com
-VAT Compliance: vat-support@qhuube.com
-Documentation: docs.qhuube.com
+Technical Issues: connect@qhuube.com
+VAT Compliance: connect@qhuube.com
+Documentation: connect@qhuube.com
 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
