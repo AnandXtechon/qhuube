@@ -59,16 +59,16 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
       toast.error("Please enter a valid email address");
       return;
     }
-  
+
     const sessionId = sessionIds[currentManualReviewFile];
     if (!sessionId) {
       toast.error("Session not found for this file");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("user_email", adminEmail);
-  
+
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`,
@@ -77,16 +77,16 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
           responseType: "blob",
         }
       );
-  
+
       const contentType = response.headers["content-type"];
-  
+
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Unexpected response format from server");
       }
-  
+
       const text = await response.data.text(); // read blob as text
       const jsonResponse = JSON.parse(text);
-  
+
       if (jsonResponse.status === "manual_review_required") {
         setReportEmailSent(true);
         toast.success(
@@ -95,18 +95,18 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
       } else {
         toast.warning("Unexpected response from server.");
       }
-  
+
       setShowManualReviewPopup(false);
       setCurrentManualReviewFile("");
       setManualReviewCount(0);
     } catch (error: any) {
       console.error("Failed to submit manual review email:", error);
-  
+
       const errorMessage =
         error?.response?.data?.detail ||
         error?.message ||
         "Please try again.";
-  
+
       toast.error(`Failed to submit manual review request: ${errorMessage}`);
       throw error;
     }
@@ -114,17 +114,17 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
 
   const downloadVatReportForFile = async (fileName: string) => {
     setDownloadingFiles((prev) => new Set(prev).add(fileName));
-  
+
     try {
       const sessionId = sessionIds[fileName];
       if (!sessionId) {
         toast.error("Session not found for this file");
         return;
       }
-  
+
       const formData = new FormData();
       formData.append("user_email", "");
-  
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`,
         formData,
@@ -132,14 +132,14 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
           responseType: "blob",
         }
       );
-  
+
       const contentType = response.headers["content-type"];
-  
+
       // Handle manual review response (JSON inside blob)
       if (contentType?.includes("application/json")) {
         const text = await response.data.text();
         const json = JSON.parse(text);
-  
+
         if (json.status === "manual_review_required") {
           setCurrentManualReviewFile(fileName);
           setManualReviewCount(json.manual_review_count || 1);
@@ -154,32 +154,32 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
           return;
         }
       }
-  
+
       // Handle ZIP download
       if (contentType?.includes("application/zip")) {
         const zip = await JSZip.loadAsync(response.data);
         const zipFiles = Object.keys(zip.files);
-  
+
         for (const file of zipFiles) {
           const fileData = await zip.file(file)?.async("blob");
           if (fileData) {
             saveAs(fileData, file);
           }
         }
-  
+
         toast.success("VAT reports extracted and downloaded successfully");
         return;
       }
-  
+
       // Handle regular Excel file
       const cd = response.headers["content-disposition"];
       let filename = fileName.replace(/\.[^.]+$/, "") + "_vat_report.xlsx";
-  
+
       if (cd) {
         const match = cd.match(/filename="?([^";]+)"?/i);
         if (match) filename = match[1];
       }
-  
+
       saveAs(response.data, filename);
       toast.success("VAT report downloaded successfully");
     } catch (err: any) {
@@ -201,18 +201,18 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
       toast.error("No files available for download");
       return;
     }
-  
+
     setIsDownloadingAll(true);
     setDownloadProgress(0);
     toast.info(`Starting download of ${uploadedFiles.length} VAT reports...`);
-  
+
     const totalFiles = uploadedFiles.length;
     let completedCount = 0;
-  
+
     const downloadPromises = uploadedFiles.map(async (fileMeta) => {
       const fileName = fileMeta.name;
       const sessionId = sessionIds[fileName];
-  
+
       if (!sessionId) {
         console.warn(`Skipping ${fileName} - no session ID found`);
         completedCount++;
@@ -224,11 +224,11 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
           requiresManualReview: false,
         };
       }
-  
+
       try {
         const formData = new FormData();
         formData.append("user_email", "");
-  
+
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download-vat-report/${sessionId}`,
           formData,
@@ -236,14 +236,14 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
             responseType: "blob", // must for file downloads
           }
         );
-  
+
         const contentType = response.headers["content-type"];
-  
+
         // Handle manual review JSON response
         if (contentType?.includes("application/json")) {
           const text = await response.data.text();
           const json = JSON.parse(text);
-  
+
           if (json.status === "manual_review_required") {
             completedCount++;
             setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
@@ -254,7 +254,7 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
               manualReviewCount: json.manual_review_count || 1,
             };
           }
-  
+
           completedCount++;
           setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
           return {
@@ -264,35 +264,35 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
             requiresManualReview: false,
           };
         }
-  
+
         // Handle ZIP response
         if (contentType?.includes("application/zip")) {
           const zip = await JSZip.loadAsync(response.data);
           const zipFiles = Object.keys(zip.files);
-  
+
           for (const zipFile of zipFiles) {
             const fileData = await zip.file(zipFile)?.async("blob");
             if (fileData) saveAs(fileData, zipFile);
           }
-  
+
           completedCount++;
           setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
           return { success: true, filename: fileName, requiresManualReview: false };
         }
-  
+
         // Handle Excel (xlsx or other single file)
         const cd = response.headers["content-disposition"];
         let downloadName = "vat_report.xlsx";
-  
+
         if (cd) {
           const match = cd.match(/filename="?([^";]+)"?/i);
           if (match) downloadName = match[1];
         } else {
           downloadName = fileName.replace(/\.[^.]+$/, "") + "_vat_report.xlsx";
         }
-  
+
         saveAs(response.data, downloadName);
-  
+
         completedCount++;
         setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
         return { success: true, filename: fileName, requiresManualReview: false };
@@ -300,7 +300,7 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
         console.error(`Download failed for ${fileName}:`, error);
         completedCount++;
         setDownloadProgress(Math.round((completedCount / totalFiles) * 100));
-  
+
         return {
           success: false,
           filename: fileName,
@@ -309,13 +309,13 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
         };
       }
     });
-  
+
     const results = await Promise.all(downloadPromises);
-  
+
     const successful = results.filter((r) => r?.success).length;
     const failed = results.filter((r) => r && !r.success && !r.requiresManualReview).length;
     const manualReview = results.filter((r) => r?.requiresManualReview).length;
-  
+
     // Final toast messages
     if (successful === uploadedFiles.length) {
       toast.success(`Successfully downloaded all ${successful} VAT reports!`);
@@ -329,7 +329,7 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
     } else {
       toast.error("Failed to download any reports");
     }
-  
+
     setIsDownloadingAll(false);
     setDownloadProgress(0);
   };
@@ -339,9 +339,9 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
       toast.error("Please enter a valid email address");
       return;
     }
-  
+
     setIsReportEmailSending(true);
-  
+
     try {
       const fileSessions = uploadedFiles
         .map(file => ({
@@ -349,19 +349,19 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
           sessionId: sessionIds[file.name],
         }))
         .filter(session => session.sessionId);
-  
+
       if (fileSessions.length === 0) {
         toast.error("No valid sessions found for the uploaded files");
         return;
       }
-  
+
       const results = await Promise.all(
         fileSessions.map(async ({ fileName, sessionId }) => {
           try {
             const formData = new FormData();
             formData.append("user_email", reportEmail);
             formData.append("file_name", fileName);
-  
+
             const response = await axios.post(
               `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/send-vat-report-email/${sessionId}`,
               formData,
@@ -371,28 +371,28 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
                 },
               }
             );
-  
+
             return { success: true, fileName };
           } catch (error: any) {
             console.error(`Failed to send ${fileName}:`, error);
-  
+
             const errorMsg =
               error?.response?.data?.detail ||
               error?.message ||
               `Unknown error sending ${fileName}`;
-  
+
             return { success: false, fileName, error: errorMsg };
           }
         })
       );
-  
+
       const successful = results.filter(r => r.success).length;
       const failed = results.length - successful;
-  
+
       if (successful > 0) {
         toast.success(`Successfully sent ${successful} report(s) to ${reportEmail}`);
       }
-  
+
       if (failed > 0) {
         toast.warning(`Failed to send ${failed} report(s). Please try downloading them instead.`);
       }
@@ -423,33 +423,41 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
   // If email is sent successfully, show only confirmation message and navigation
   if (reportEmailSent) {
     return (
-      <div className="py-10 mt-20 xl:mt-28 bg-white">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Success Message */}
-          <div className="rounded-xl border border-gray-100 p-6 text-center mb-10">
-            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
-            <h3 className="text-xl font-semibold text-green-800 mb-2">Email Sent Successfully!</h3>
-            <p className="text-green-700 mb-1">
-              Your VAT compliance reports will be sent to <span className="font-medium">{reportEmail}</span> shortly.
-            </p>
-            <p className="text-green-600 text-sm">Please check your inbox and spam folder for the email.</p>
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+        <div className="w-full max-w-xl bg-white border border-gray-200 rounded-xl shadow-md p-8 text-center">
+
+          {/* Success Icon */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-green-100 rounded-full p-4">
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            </div>
           </div>
 
+          {/* Success Message */}
+          <h2 className="text-2xl font-semibold text-green-800 mb-2">Email Sent Successfully!</h2>
+          <p className="text-gray-700 mb-1">
+            Your VAT compliance reports will be sent to{" "}
+            <span className="font-medium text-gray-900">{reportEmail}</span> shortly.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            Please check your inbox and spam folder for the confirmation.
+          </p>
+
           {/* Navigation Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
             <Button
               variant="outline"
               onClick={onPrevious}
-              className="w-full sm:w-auto bg-white border-gray-300 text-gray-700 hover:bg-gray-100 cursor-pointer"
+              className="w-full sm:w-auto bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Previous Step
             </Button>
             <Button
-              className="bg-sky-600 hover:bg-sky-700 text-white w-full sm:w-auto cursor-pointer"
+              className="w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white"
               onClick={handleStartNewProcess}
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4 mr-2" />
               Start New Process
             </Button>
           </div>
