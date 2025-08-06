@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { CheckCircle, CreditCard, User, Calendar } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { useUploadStore } from "@/store/uploadStore"
 
 interface PaymentDetails {
     customerName: string
@@ -20,6 +21,7 @@ const SuccessPage = () => {
     const searchParams = useSearchParams()
     const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
     const [loading, setLoading] = useState(true)
+    const { setPaymentCompleted } = useUploadStore()
 
     useEffect(() => {
         const sessionId = searchParams.get("session_id")
@@ -63,7 +65,7 @@ const SuccessPage = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600"></div>
             </div>
         )
     }
@@ -147,7 +149,7 @@ const SuccessPage = () => {
                 {/* Action Buttons */}
                 <div className="mt-8 space-y-3">
                     <button
-                        onClick={() => (window.location.href = "/upload?step=4")}
+                        onClick={() => {setPaymentCompleted(true); (window.location.href = "/upload?step=4")}}
                         className="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium py-3 px-4 rounded-lg transition-colors cursor-pointer"
                     >
                         Continue to Overview
