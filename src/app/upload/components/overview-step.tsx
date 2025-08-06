@@ -467,7 +467,7 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
   }
 
   return (
-    <div className="py-4 sm:py-6 lg:py-8 mt-10 xl:mt-4">
+    <div className="py-4 sm:py-6 lg:py-8 mt-12 xl:mt-4">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-full mx-auto">
           {/* Header */}
