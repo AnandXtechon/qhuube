@@ -5,7 +5,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 <div align="center">
-  <img src="public/qhuube-logo.png" alt="Qhuube Logo" width="200"/>
+  <img src="public/icons/Logo-2.png" alt="Qhuube Logo" width="200"/>
   
   **Streamline your EU VAT OSS tax reporting** with Qhuube - the all-in-one solution for businesses to handle VAT calculations, data validation, and compliant reporting across all EU member states.
 </div>
