@@ -27,9 +27,17 @@ const VATComplianceWizard = () => {
         const stepParam = Number(searchParams.get("step"))
         const paymentSuccess = searchParams.get("payment_success")
     
+        const noFilesUploaded = uploadedFiles.length === 0
+    
+        // Redirect to step 1 if there are no uploaded files and step is beyond 1
+        if (stepParam > 1 && noFilesUploaded) {
+            setCurrentStep(1)
+            router.push("/upload?step=1")
+            return
+        }
+    
         // Guard: prevent access to Overview step without payment
         if (stepParam === 4 && !paymentCompleted) {
-            // Redirect user back to Payment step
             setCurrentStep(3)
             router.push("/upload?step=3")
             return
@@ -45,7 +53,7 @@ const VATComplianceWizard = () => {
             localStorage.removeItem("pre-payment-step")
             localStorage.removeItem("payment-initiated")
         }
-    }, [searchParams, paymentCompleted, router])
+    }, [searchParams, paymentCompleted, uploadedFiles, router])
     
 
     // Check for interrupted payment flow
