@@ -1,146 +1,122 @@
-## 📄 Qhuube – EU VAT OSS Compliance App Documentation
+# Qhuube - EU VAT OSS Compliance App
 
----
+![Qhuube Logo](public/qhuube-logo.png)
 
-### **1. Introduction**
+Streamline EU VAT OSS tax reporting with Qhuube - a comprehensive solution for businesses to handle VAT calculations, data validation, and compliant reporting across EU member states.
 
-**What is Qhuube?**
-Qhuube is a web application designed to streamline **EU VAT OSS (One Stop Shop)** tax reporting for businesses. It allows users to upload transaction data, correct invalid entries, calculate VAT across EU member states, and generate compliant summary reports — all in one place.
+## 🌟 Features
 
-**Who is this for?**
+- **📁 File Upload**: Drag-and-drop interface for CSV/Excel transaction files
+- **✏️ Data Correction**: Inline editing for invalid/missing VAT data
+- **💳 Secure Payments**: PCI-compliant payment processing via Stripe
+- **📊 Report Generation**: One-click Excel exports for VAT summaries and country breakdowns
+- **📧 Email Alerts**: Automated notifications for manual review cases
+- **🔒 GDPR Compliance**: In-memory processing with no permanent data storage
 
-* Internal developers
-* HR/compliance teams
-* Financial operations
-* External auditors (read-only access if needed)
+## 🛠️ Tech Stack
 
----
+| Component       | Technologies                          |
+|-----------------|---------------------------------------|
+| **Frontend**    | Next.js, Tailwind CSS, Framer Motion  |
+| **Backend**     | FastAPI (Python), Pandas              |
+| **Data Handling**| openpyxl, pandas                     |
+| **Payments**    | Stripe                                |
+| **Export**      | Excel (.xlsx)                         |
 
-### **2. Key Features**
+## 🚀 Installation
 
-* 📁 **Upload** transaction files (CSV or Excel)
-* ✏️ **Correction** of invalid or missing VAT-related data
-* 💳 **Secure payment via Stripe** for compliance services
-* 📊 **Overview & Download** VAT OSS summary report in Excel
-* 📧 Email reports with highlights for manual review (if needed)
+### Prerequisites
+- Node.js (v16+)
+- Python (v3.8+)
+- Stripe account (for payment processing)
 
----
-
-### **3. Tech Stack**
-
-| Component         | Tech Used                            |
-| ----------------- | ------------------------------------ |
-| **Frontend**      | Next.js, Tailwind CSS, Framer Motion |
-| **Backend**       | FastAPI (Python), Pandas             |
-| **Data Handling** | Excel via `openpyxl`, `pandas`       |
-| **Payments**      | Stripe                               |
-| **Export Format** | Excel files (.xlsx)                  |
-
----
-
-### **4. App Workflow**
-
-#### 🔼 Step 1: Upload
-
-* Supported formats: `.xlsx`, `.csv`
-* Required fields: Order Date, Country, Net Price, VAT Rate, etc.
-* Validations are applied before processing
-
-#### 🛠️ Step 2: Correction
-
-* Invalid or missing data (e.g. VAT number, country mismatch) is flagged
-* Users can correct data inline or re-upload
-
-#### 💰 Step 3: Payment
-
-* Users are prompted to pay via **Stripe** before proceeding to report generation
-* Stripe handles card payments securely and returns success callback
-
-#### 📥 Step 4: Overview & Download
-
-* Once processing is complete, the user sees a summary of:
-
-  * Net Total
-  * VAT Amount
-  * Gross Total by country
-* Users can download:
-
-  * VAT Report
-  * Summary Report
-  * (Manual review file if applicable)
-
----
-
-### **5. Manual Review Handling**
-
-If the system cannot find VAT rules or country info:
-
-* Rows are flagged as `"Not Found"`
-* User receives an email with:
-
-  * Excel report (highlighted rows)
-  * JSON-style table for flagged entries
-* Email is sent from `mailer@xtechon.com`
-
----
-
-### **6. Security & Compliance**
-
-* Session data stored temporarily (cleared after report is downloaded)
-* No permanent storage unless extended via cloud provider (optional)
-* Stripe handles all payment security (PCI-compliant)
-* Excel reports are generated in-memory and emailed or downloaded directly
-
----
-
-### **7. Developer Setup**
-
-#### Backend:
-
-```bash
-# Install dependencies
-pip install fastapi uvicorn pandas openpyxl stripe
-
-# Run server
-uvicorn main:app --reload
-```
-
-#### Frontend:
-
-```bash
-# Install and run frontend
-npm install
-npm run dev
-```
-
-#### Folder Structure:
-
-```
+### 📁 Project Structure
 qhuube/
 ├── backend/
-│   ├── main.py
+│   ├── main.py                 # FastAPI application entry point
 │   ├── routes/
-│   └── utils/
+│   │   ├── upload.py           # File upload handling
+│   │   ├── payment.py          # Stripe integration
+│   │   └── reports.py          # Report generation
+│   ├── utils/
+│   │   ├── validator.py        # Data validation logic
+│   │   ├── vat_calculator.py   # VAT calculation engine
+│   │   └── mailer.py           # Email notifications
+│   └── requirements.txt        # Python dependencies
+│
 ├── frontend/
 │   ├── pages/
+│   │   ├── upload.js           # File upload interface
+│   │   ├── correction.js       # Data correction UI
+│   │   ├── payment.js          # Stripe checkout
+│   │   └── reports.js          # Report dashboard
 │   ├── components/
-│   └── styles/
-```
+│   │   ├── FileUploader.js     # Drag-and-drop component
+│   │   ├── DataTable.js        # Editable data table
+│   │   └── ReportViewer.js     # Report preview
+│   └── styles/                 # Tailwind CSS styles
+│
+└── README.md                   # This file
 
----
+### 🔄 Workflow
 
-### **8. Known Limitations**
+## 1. Upload:
+Supported formats: .xlsx, .csv
+Required fields: Order Date, Country, Net Price, VAT Rate
+Real-time validation before processing
 
-* No multi-user sessions yet (per-session memory)
-* VAT rules not cached (subject to real-time lookup latency)
-* Currently supports EU VAT OSS — IOSS and MOSS support in progress
+## 2. Correction:
+Flag invalid entries (VAT number, country mismatch)
+Inline editing or re-upload capabilities
 
----
+## 3. Payment:
+Secure checkout via Stripe
+Payment confirmation unlocks report generation
 
-### **9. Contact Info**
+## 4. Reports:
+VAT summary by country
+Downloadable Excel reports:
+VAT Report
+Summary Report
+Manual Review File (if applicable)
 
-For questions, bugs, or access:
+## ⚠️ Known Limitations
+Session Management: Single-user sessions only (no multi-user support)
+VAT Rules: Real-time lookup (no caching) may cause latency
+Scope: Currently supports EU VAT OSS only (IOSS/MOSS in development)
+File Size: Maximum 10MB per upload
 
-* **Tech Team**: [devs@qhuube.com](mailto:devs@qhuube.com)
-* **Compliance Help**: [vat-support@qhuube.com](mailto:vat-support@qhuube.com)
+## 🔒 Security & Compliance
+Data Handling: All processing done in-memory; files deleted after download
+Payments: Fully PCI-compliant via Stripe
+GDPR: No permanent data storage unless explicitly configured
+Audit Trail: Session logs available for 30 days (admin access)
+
+## 📞 Support
+Technical Issues: devs@qhuube.com
+VAT Compliance: vat-support@qhuube.com
+Documentation: docs.qhuube.com
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+### Backend Setup
+```bash
+# Clone repository
+git clone https://github.com/your-org/qhuube.git
+cd qhuube/backend
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run development server
+uvicorn main:app --reload
+
+# Navigate to frontend directory
+cd ../frontend
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
 
