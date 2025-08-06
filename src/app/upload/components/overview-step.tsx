@@ -423,7 +423,7 @@ export default function OverviewStep({ onPrevious }: OverviewStepProps) {
   // If email is sent successfully, show only confirmation message and navigation
   if (reportEmailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="flex items-center justify-center bg-white px-4">
         <div className="w-full max-w-xl bg-white border border-gray-200 rounded-xl shadow-md p-8 text-center">
 
           {/* Success Icon */}
